@@ -22,6 +22,9 @@ interface MediaItem {
   createdAt: string;
 }
 
+import { notifyCmsUpdated } from '@/context/LanguageContext';
+import { compressImage } from '@/lib/utils';
+
 export default function ContentManager() {
   const [activeTab, setActiveTab] = useState<'hero' | 'about' | 'contact' | 'footer'>('hero');
   const [content, setContent] = useState<any>(null);
@@ -97,7 +100,8 @@ export default function ContentManager() {
     setUploading(true);
     try {
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const rawFile = files[i];
+        const file = await compressImage(rawFile);
         const formData = new FormData();
         formData.append('file', file);
 
@@ -165,6 +169,7 @@ export default function ContentManager() {
       });
 
       if (res.ok) {
+        notifyCmsUpdated();
         setToast('Content updated successfully! Changes are live.');
         setTimeout(() => setToast(''), 4000);
       } else {
@@ -495,6 +500,9 @@ export default function ContentManager() {
                     {uploading ? 'Uploading File...' : 'Drag and drop images here'}
                   </p>
                   <p className="text-xs text-slate mt-1">Supports PNG, JPG, WEBP, SVG up to 10MB</p>
+                  <p className="text-[11px] text-teal/80 mt-1.5">
+                    Safe upload: Any image size is safe. Media files are automatically compressed and optimized to 1200x1200px max (JPEG format) for ultimate site speed and low bandwidth usage.
+                  </p>
                 </div>
       
                 <div>

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getDb, saveDb, ServiceItem } from '@/lib/store';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const db = getDb();
   // Sort by order ascending

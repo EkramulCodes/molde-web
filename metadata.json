@@ -1,6 +1,6 @@
 {
   "name": "MoldeWeb",
-  "description": "",
+  "description": "MoldeWeb - A Norway-based agency specializing in Website Development, Digital Marketing, Facebook Ads, and Google Ads.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

@@ -301,6 +301,19 @@ const DEFAULT_DB: DatabaseSchema = {
 const DB_PATH = path.join(process.cwd(), 'data', 'db.json');
 
 let memoryDb: DatabaseSchema | null = null;
+let lastUpdatedTime: number = Date.now();
+
+export function getCmsVersion(): number {
+  try {
+    if (fs.existsSync(DB_PATH)) {
+      const stats = fs.statSync(DB_PATH);
+      return Math.max(stats.mtimeMs, lastUpdatedTime);
+    }
+  } catch (err) {
+    // ignore
+  }
+  return lastUpdatedTime;
+}
 
 export function getDb(): DatabaseSchema {
   if (memoryDb) {
@@ -325,6 +338,7 @@ export function getDb(): DatabaseSchema {
 
 export function saveDb(data: DatabaseSchema): boolean {
   memoryDb = data;
+  lastUpdatedTime = Date.now();
   try {
     const dir = path.dirname(DB_PATH);
     if (!fs.existsSync(dir)) {
@@ -333,7 +347,7 @@ export function saveDb(data: DatabaseSchema): boolean {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
     return true;
   } catch (err) {
-    console.error('Error writing DB file', err);
-    return false;
+    console.warn('Filesystem read-only or error writing DB file, persisting in memory:', err);
+    return true;
   }
 }

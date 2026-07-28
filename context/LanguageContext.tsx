@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { en } from '../lib/dictionary/en';
 import { no } from '../lib/dictionary/no';
 
@@ -27,16 +27,44 @@ export interface DesignState {
   enableContourBg: boolean;
 }
 
+export interface ServiceStateItem {
+  id: string;
+  slug: string;
+  icon: string;
+  imageUrl?: string;
+  titleEn: string;
+  titleNo: string;
+  descriptionEn: string;
+  descriptionNo: string;
+  featuresEn: string[];
+  featuresNo: string[];
+  price?: string;
+  status: 'active' | 'hidden';
+  order: number;
+}
+
 interface LanguageContextProps {
   language: Language;
   toggleLanguage: () => void;
   t: Dictionary;
   promo: PromoState | null;
   design: DesignState | null;
+  services: ServiceStateItem[];
   refreshDynamicData: () => void;
 }
 
 const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
+
+export function notifyCmsUpdated() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('cms-updated'));
+    try {
+      localStorage.setItem('cms_last_updated', Date.now().toString());
+    } catch (e) {
+      // ignore
+    }
+  }
+}
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('no');
@@ -48,50 +76,75 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       setLanguage(savedLanguage);
     }
   }, []);
+
   const [dynamicContent, setDynamicContent] = useState<any>(null);
   const [promo, setPromo] = useState<PromoState | null>(null);
   const [design, setDesign] = useState<DesignState | null>(null);
+  const [services, setServices] = useState<ServiceStateItem[]>([]);
 
-  const loadDynamicData = async () => {
+  const loadDynamicData = useCallback(async () => {
     try {
-      const [contentRes, promoRes, designRes] = await Promise.all([
-        fetch('/api/content'),
-        fetch('/api/promo'),
-        fetch('/api/design'),
+      const t = Date.now();
+      const [contentRes, promoRes, designRes, servicesRes] = await Promise.all([
+        fetch(`/api/content?t=${t}`, { cache: 'no-store' }),
+        fetch(`/api/promo?t=${t}`, { cache: 'no-store' }),
+        fetch(`/api/design?t=${t}`, { cache: 'no-store' }),
+        fetch(`/api/services?t=${t}`, { cache: 'no-store' }),
       ]);
 
       if (contentRes.ok) setDynamicContent(await contentRes.json());
       if (promoRes.ok) setPromo(await promoRes.json());
-      if (designRes.ok) setDesign(await designRes.json());
+      if (designRes.ok) {
+        const d = await designRes.json();
+        setDesign(d);
+        if (d) {
+          if (d.primaryColor) document.documentElement.style.setProperty('--teal', d.primaryColor);
+          if (d.accentColor) document.documentElement.style.setProperty('--gold', d.accentColor);
+        }
+      }
+      if (servicesRes.ok) {
+        const svcs = await servicesRes.json();
+        if (Array.isArray(svcs)) {
+          setServices(svcs.filter((s: ServiceStateItem) => s.status === 'active'));
+        }
+      }
     } catch (e) {
       console.error('Error loading dynamic site data', e);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    let active = true;
-    const fetchAll = async () => {
-      try {
-        const [contentRes, promoRes, designRes] = await Promise.all([
-          fetch('/api/content'),
-          fetch('/api/promo'),
-          fetch('/api/design'),
-        ]);
+    const initData = async () => {
+      await loadDynamicData();
+    };
+    initData();
 
-        if (active) {
-          if (contentRes.ok) setDynamicContent(await contentRes.json());
-          if (promoRes.ok) setPromo(await promoRes.json());
-          if (designRes.ok) setDesign(await designRes.json());
-        }
-      } catch (e) {
-        console.error('Error loading dynamic site data', e);
+    // Listen for custom cms-updated event
+    const handleCmsEvent = () => {
+      loadDynamicData();
+    };
+
+    // Listen for cross-tab storage changes
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === 'cms_last_updated') {
+        loadDynamicData();
       }
     };
-    fetchAll();
+
+    window.addEventListener('cms-updated', handleCmsEvent);
+    window.addEventListener('storage', handleStorageEvent);
+
+    // Poll every 3 seconds for instant real-time sync across sessions
+    const interval = setInterval(() => {
+      loadDynamicData();
+    }, 3000);
+
     return () => {
-      active = false;
+      window.removeEventListener('cms-updated', handleCmsEvent);
+      window.removeEventListener('storage', handleStorageEvent);
+      clearInterval(interval);
     };
-  }, []);
+  }, [loadDynamicData]);
 
   const toggleLanguage = () => {
     const newLanguage = language === 'en' ? 'no' : 'en';
@@ -150,6 +203,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         t: mergedDictionary,
         promo,
         design,
+        services,
         refreshDynamicData: loadDynamicData,
       }}
     >

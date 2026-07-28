@@ -15,6 +15,8 @@ import {
   FiRefreshCw, 
   FiDollarSign 
 } from 'react-icons/fi';
+import { notifyCmsUpdated } from '@/context/LanguageContext';
+import { compressImage } from '@/lib/utils';
 
 interface ServiceItem {
   id: string;
@@ -41,6 +43,7 @@ export default function ServicesManager() {
   const [toast, setToast] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Partial<ServiceItem> | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const [uploadingImage, setUploadingImage] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -78,9 +81,18 @@ export default function ServicesManager() {
     return () => { active = false; };
   }, []);
 
-  const handleImageUpload = async (file: File) => {
+  const handleImageUpload = async (rawFile: File) => {
+    // Generate immediate local preview
+    try {
+      const localUrl = URL.createObjectURL(rawFile);
+      setImagePreview(localUrl);
+    } catch (err) {
+      console.warn('Failed to create local image preview url', err);
+    }
+
     setUploadingImage(true);
     try {
+      const file = await compressImage(rawFile);
       const formData = new FormData();
       formData.append('file', file);
       
@@ -92,18 +104,22 @@ export default function ServicesManager() {
       if (res.ok) {
         const data = await res.json();
         setEditingService(prev => prev ? { ...prev, imageUrl: data.data.url } : prev);
+        setImagePreview(data.data.url);
       } else {
         alert('Upload failed');
+        setImagePreview(editingService?.imageUrl || null);
       }
     } catch (e) {
       console.error(e);
       alert('Upload error');
+      setImagePreview(editingService?.imageUrl || null);
     } finally {
       setUploadingImage(false);
     }
   };
 
   const handleOpenAddModal = () => {
+    setImagePreview(null);
     setEditingService({
       id: `svc-${Date.now()}`,
       slug: 'new-service',
@@ -124,6 +140,7 @@ export default function ServicesManager() {
   };
 
   const handleOpenEditModal = (service: ServiceItem) => {
+    setImagePreview(service.imageUrl || null);
     setEditingService({ ...service });
     setIsModalOpen(true);
   };
@@ -148,9 +165,11 @@ export default function ServicesManager() {
       });
 
       if (res.ok) {
+        notifyCmsUpdated();
         setToast(`Service ${isNew ? 'created' : 'updated'} successfully!`);
         setIsModalOpen(false);
         setEditingService(null);
+        setImagePreview(null);
         await loadServices();
         setTimeout(() => setToast(''), 4000);
       } else {
@@ -170,6 +189,7 @@ export default function ServicesManager() {
     try {
       const res = await fetch(`/api/services/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        notifyCmsUpdated();
         setToast('Service deleted.');
         await loadServices();
         setTimeout(() => setToast(''), 4000);
@@ -188,6 +208,7 @@ export default function ServicesManager() {
         body: JSON.stringify({ ...service, status: newStatus }),
       });
       if (res.ok) {
+        notifyCmsUpdated();
         await loadServices();
       }
     } catch (e) {
@@ -214,11 +235,14 @@ export default function ServicesManager() {
     setServices(newServices);
 
     try {
-      await fetch('/api/services', {
+      const res = await fetch('/api/services', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newServices),
       });
+      if (res.ok) {
+        notifyCmsUpdated();
+      }
     } catch (e) {
       console.error('Failed to save reordering', e);
     }
@@ -366,7 +390,11 @@ export default function ServicesManager() {
                 {services.some((s) => s.id === editingService.id) ? 'Edit Service' : 'Create New Service'}
               </h2>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEditingService(null);
+                  setImagePreview(null);
+                }}
                 className="text-slate hover:text-ink p-1 rounded-lg"
               >
                 <FiX size={20} />
@@ -444,6 +472,28 @@ export default function ServicesManager() {
                 <div className="space-y-2 md:col-span-2">
                   <label className="block text-xs font-bold uppercase text-slate">Service Image</label>
                   
+                  {/* Image Preview above the drag-and-drop zone */}
+                  {imagePreview && (
+                    <div className="relative group rounded-lg overflow-hidden border border-slate/20 bg-bg-deep max-h-[240px] flex items-center justify-center p-2 mb-2 animate-fade-in">
+                      <img
+                        src={imagePreview}
+                        alt="Service preview"
+                        className="max-h-[220px] w-auto object-contain rounded-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setEditingService(prev => prev ? { ...prev, imageUrl: '' } : prev);
+                        }}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-90 hover:opacity-100 transition-opacity shadow-lg cursor-pointer"
+                        title="Remove image"
+                      >
+                        <FiTrash2 size={14} />
+                      </button>
+                    </div>
+                  )}
+
                   <div
                     onDragOver={(e) => {
                       e.preventDefault();
@@ -466,7 +516,10 @@ export default function ServicesManager() {
                       <p className="text-sm font-medium text-ink">
                         {uploadingImage ? 'Uploading...' : 'Drag & drop service image here'}
                       </p>
-                      <p className="text-xs text-slate">Supports JPG, PNG, WEBP (Max 5MB). Recommended size: 800x600px</p>
+                      <p className="text-xs text-slate">Supports JPG, PNG, WEBP (Max 5MB). Recommended size: 754x668 px</p>
+                      <p className="text-[11px] text-teal/80">
+                        Safe upload: Any size is safe. Large images are automatically resized and compressed to 1200x1200px max (JPEG) for high-performance loading.
+                      </p>
                       
                       {!uploadingImage && (
                         <label className="mt-2 inline-flex items-center space-x-2 px-4 py-1.5 bg-teal/10 text-teal hover:text-white hover:bg-teal rounded cursor-pointer transition-colors text-xs font-bold uppercase">
@@ -490,7 +543,11 @@ export default function ServicesManager() {
                     <input
                       type="text"
                       value={editingService.imageUrl || ''}
-                      onChange={(e) => setEditingService({ ...editingService, imageUrl: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditingService({ ...editingService, imageUrl: val });
+                        setImagePreview(val || null);
+                      }}
                       className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
                       placeholder="Or paste image URL (https://images.unsplash.com/...)"
                     />
@@ -557,7 +614,11 @@ export default function ServicesManager() {
               <div className="flex justify-end space-x-3 pt-4 border-t border-slate/10">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingService(null);
+                    setImagePreview(null);
+                  }}
                   className="px-5 py-2.5 bg-slate/10 text-slate hover:text-ink rounded-lg text-xs font-bold uppercase"
                 >
                   Cancel

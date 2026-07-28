@@ -27,6 +27,7 @@ export function Logo({ className = '', height = 36, width = 160, showBadge = fal
             width={width}
             height={height}
             priority
+            unoptimized={logoSrc.startsWith('data:') || logoSrc.startsWith('http')}
             onError={() => setImageError(true)}
             className="h-8 md:h-10 w-auto object-contain transition-all duration-300 logo-theme-adapt bg-transparent border-none outline-none"
             referrerPolicy="no-referrer"

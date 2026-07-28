@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FiSave, FiCheckCircle, FiRefreshCw, FiLayout, FiEye } from 'react-icons/fi';
+import { notifyCmsUpdated } from '@/context/LanguageContext';
 
 export default function PromoManager() {
   const [promo, setPromo] = useState({
@@ -43,6 +44,7 @@ export default function PromoManager() {
       });
 
       if (res.ok) {
+        notifyCmsUpdated();
         setToast('Promo bar settings updated!');
         setTimeout(() => setToast(''), 4000);
       } else {

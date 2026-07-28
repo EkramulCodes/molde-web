@@ -1,18 +1,42 @@
 'use client';
 
 import { useLanguage } from '../../context/LanguageContext';
-import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiArrowRight } from 'react-icons/fi';
+import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
 import Link from 'next/link';
 
 export default function Home() {
-  const { t, language } = useLanguage();
+  const { t, language, services: dynamicServices } = useLanguage();
 
-  const services = [
-    { id: 'web', icon: FiMonitor, ...t.services.webDev },
-    { id: 'marketing', icon: FiTrendingUp, ...t.services.marketing },
-    { id: 'fb', icon: FiTarget, ...t.services.fbAds },
-    { id: 'google', icon: FiSearch, ...t.services.googleAds },
+  const getIcon = (iconName?: string) => {
+    switch (iconName) {
+      case 'FiTrendingUp':
+        return FiTrendingUp;
+      case 'FiTarget':
+        return FiTarget;
+      case 'FiSearch':
+        return FiSearch;
+      default:
+        return FiMonitor;
+    }
+  };
+
+  const defaultServices = [
+    { id: 'web', icon: FiMonitor, ...t.services.webDev, imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80', price: 'From $2,500' },
+    { id: 'marketing', icon: FiTrendingUp, ...t.services.marketing, imageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80', price: 'From $1,200/mo' },
+    { id: 'fb', icon: FiTarget, ...t.services.fbAds, imageUrl: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80', price: 'From $1,000/mo' },
+    { id: 'google', icon: FiSearch, ...t.services.googleAds, imageUrl: 'https://images.unsplash.com/photo-1562577309-4932fdd64cd1?auto=format&fit=crop&w=800&q=80', price: 'From $1,500/mo' },
   ];
+
+  const displayServices = dynamicServices.length > 0
+    ? dynamicServices.map((s) => ({
+        id: s.id,
+        icon: getIcon(s.icon),
+        title: language === 'en' ? s.titleEn : s.titleNo,
+        description: language === 'en' ? s.descriptionEn : s.descriptionNo,
+        imageUrl: s.imageUrl,
+        price: s.price,
+      }))
+    : defaultServices;
 
   return (
     <div className="relative w-full overflow-x-hidden">
@@ -86,22 +110,35 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {services.map((svc) => {
+            {displayServices.map((svc) => {
               const Icon = svc.icon;
               return (
                 <div 
                   key={svc.id}
-                  className="bento-card p-6 sm:p-8 rounded-xl flex flex-col justify-between group"
+                  className="bento-card p-6 rounded-xl flex flex-col justify-between group overflow-hidden"
                 >
                   <div>
-                    <div className="w-12 h-12 rounded-lg bg-teal/10 flex items-center justify-center text-teal mb-5 group-hover:scale-110 transition-transform origin-left">
-                      <Icon size={28} strokeWidth={1.8} />
-                    </div>
+                    {svc.imageUrl ? (
+                      <div className="w-full h-36 mb-4 rounded-lg overflow-hidden border border-slate/10 bg-bg-primary">
+                        <img 
+                          src={svc.imageUrl} 
+                          alt={svc.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-teal/10 flex items-center justify-center text-teal mb-5 group-hover:scale-110 transition-transform origin-left">
+                        <Icon size={28} strokeWidth={1.8} />
+                      </div>
+                    )}
                     <span className="font-mono text-[10px] uppercase tracking-widest text-slate bg-bg-primary/80 px-2 py-0.5 rounded border border-slate/10 inline-block mb-3">
                       {svc.id.toUpperCase()}
                     </span>
                     <h3 className="font-display font-bold text-base sm:text-lg mb-2 uppercase tracking-wide text-ink">{svc.title}</h3>
                     <p className="text-xs text-slate leading-relaxed">{svc.description}</p>
+                    {svc.price && (
+                      <p className="mt-3 text-xs font-mono font-bold text-gold">{svc.price}</p>
+                    )}
                   </div>
                   <div className="pt-6 border-t border-slate/10 mt-6">
                     <Link href="/contact" className="text-[11px] font-mono font-bold uppercase tracking-wider text-teal group-hover:text-gold transition-colors inline-flex items-center gap-1.5">

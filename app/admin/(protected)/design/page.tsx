@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiSave, FiCheckCircle, FiRefreshCw, FiDroplet, FiSliders } from 'react-icons/fi';
+import { FiSave, FiCheckCircle, FiRefreshCw, FiDroplet, FiSliders, FiUpload } from 'react-icons/fi';
+import { notifyCmsUpdated } from '@/context/LanguageContext';
+import { compressImage } from '@/lib/utils';
 
 export default function DesignManager() {
   const [design, setDesign] = useState({
@@ -19,6 +21,7 @@ export default function DesignManager() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [toast, setToast] = useState('');
 
   useEffect(() => {
@@ -36,6 +39,36 @@ export default function DesignManager() {
       });
   }, []);
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
+
+    setUploadingLogo(true);
+    try {
+      const file = await compressImage(rawFile, 600, 600, 0.9); // smaller bounds for logo
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/media', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setDesign((prev) => ({ ...prev, logoUrl: data.data.url }));
+        setToast('Logo uploaded! Click Save to apply.');
+        setTimeout(() => setToast(''), 3000);
+      } else {
+        alert('Failed to upload logo.');
+      }
+    } catch (err) {
+      alert('Error uploading logo image.');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -49,6 +82,7 @@ export default function DesignManager() {
       });
 
       if (res.ok) {
+        notifyCmsUpdated();
         setToast('Design tokens and theme settings saved!');
         setTimeout(() => setToast(''), 4000);
       } else {
@@ -209,14 +243,35 @@ export default function DesignManager() {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="block text-xs font-bold uppercase text-slate">Logo Image URL (optional)</label>
-              <input
-                type="text"
-                value={design.logoUrl}
-                onChange={(e) => setDesign({ ...design, logoUrl: e.target.value })}
-                placeholder="https://... or /uploads/logo.png"
-                className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
-              />
+              <label className="block text-xs font-bold uppercase text-slate">Logo Image</label>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  value={design.logoUrl}
+                  onChange={(e) => setDesign({ ...design, logoUrl: e.target.value })}
+                  placeholder="Paste URL or upload image file below"
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+                <label className="px-5 py-3 bg-teal/10 hover:bg-teal/20 text-teal border border-teal/30 rounded-lg text-xs font-bold uppercase cursor-pointer flex items-center justify-center space-x-2 shrink-0 transition-colors">
+                  <FiUpload size={16} />
+                  <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    disabled={uploadingLogo}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              <p className="text-[11px] text-teal/80 mt-1">
+                Safe upload: Any size is safe. Logos are automatically resized and compressed to 600x600px max (JPEG) for optimal header fit and lightweight delivery.
+              </p>
+              {design.logoUrl && (
+                <div className="mt-2 p-2 bg-bg-deep rounded border border-slate/10 inline-block">
+                  <img src={design.logoUrl} alt="Logo preview" className="h-8 w-auto object-contain" />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

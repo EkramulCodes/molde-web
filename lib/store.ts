@@ -1,118 +1,24 @@
 import fs from 'fs';
 import path from 'path';
-
-export interface ContentData {
-  hero: {
-    headlineEn: string;
-    headlineNo: string;
-    subheadlineEn: string;
-    subheadlineNo: string;
-    ctaPrimaryEn: string;
-    ctaPrimaryNo: string;
-    ctaSecondaryEn: string;
-    ctaSecondaryNo: string;
-  };
-  about: {
-    titleEn: string;
-    titleNo: string;
-    descEn: string;
-    descNo: string;
-    approachTitleEn: string;
-    approachTitleNo: string;
-    approachP1En: string;
-    approachP1No: string;
-    approachP2En: string;
-    approachP2No: string;
-  };
-  contact: {
-    titleEn: string;
-    titleNo: string;
-    subtitleEn: string;
-    subtitleNo: string;
-  };
-  footer: {
-    rightsEn: string;
-    rightsNo: string;
-  };
-}
-
-export interface DesignData {
-  siteName: string;
-  tagline: string;
-  logoUrl: string;
-  primaryColor: string; // e.g. #14B8A6
-  accentColor: string;  // e.g. #D97706
-  bgDeepColor: string;
-  bgPrimaryColor: string;
-  textColor: string;
-  fontFamily: string;
-  enableContourBg: boolean;
-}
-
-export interface ServiceItem {
-  id: string;
-  slug: string;
-  icon: string; // icon name or SVG
-  imageUrl?: string;
-  titleEn: string;
-  titleNo: string;
-  descriptionEn: string;
-  descriptionNo: string;
-  featuresEn: string[];
-  featuresNo: string[];
-  price?: string;
-  status: 'active' | 'hidden';
-  order: number;
-  metaTitle?: string;
-  metaDescription?: string;
-  ogImage?: string;
-}
-
-export interface SeoItem {
-  pagePath: string; // e.g. "/", "/about", "/services", "/contact"
-  pageName: string;
-  metaTitle: string;
-  metaDescription: string;
-  ogImage: string;
-  canonicalUrl: string;
-  keywords: string;
-}
-
-export interface LeadItem {
-  id: string;
-  name: string;
-  email: string;
-  service: string;
-  message: string;
-  createdAt: string;
-  status: 'new' | 'read' | 'archived';
-}
-
-export interface MediaItem {
-  id: string;
-  filename: string;
-  url: string;
-  size: number;
-  type: string;
-  createdAt: string;
-}
-
-export interface PromoData {
-  active: boolean;
-  messageEn: string;
-  messageNo: string;
-  link: string;
-}
-
-export interface DatabaseSchema {
-  content: ContentData;
-  design: DesignData;
-  services: ServiceItem[];
-  seo: SeoItem[];
-  leads: LeadItem[];
-  media: MediaItem[];
-  promo: PromoData;
-}
+import { 
+  DatabaseSchema, 
+  ContentData, 
+  DesignData, 
+  ServiceItem, 
+  SeoItem, 
+  LeadItem, 
+  MediaItem, 
+  PromoData, 
+  PortfolioItem, 
+  PackageItem, 
+  PaymentSettings,
+  NavItem,
+  ContactInfo,
+  SiteSettings,
+  PortfolioSettings,
+  PackageSettings,
+  FooterSettings
+} from './types';
 
 const DEFAULT_DB: DatabaseSchema = {
   content: {
@@ -147,6 +53,14 @@ const DEFAULT_DB: DatabaseSchema = {
     footer: {
       rightsEn: 'All rights reserved.',
       rightsNo: 'Alle rettigheter forbeholdt.',
+    },
+    portfolio: {
+      titleEn: 'Our Work',
+      titleNo: 'Vårt Arbeid',
+    },
+    packages: {
+      titleEn: 'Packages & Pricing',
+      titleNo: 'Pakker & Priser',
     },
   },
   design: {
@@ -231,6 +145,173 @@ const DEFAULT_DB: DatabaseSchema = {
       metaDescription: 'Capture high-intent search leads with expert Google Ads campaign management.',
     }
   ],
+  portfolio: [
+    {
+      id: 'p1',
+      titleEn: 'LuxeTime E-commerce Platform',
+      titleNo: 'LuxeTime E-handelsplattform',
+      categoryEn: 'Web Development',
+      categoryNo: 'Webutvikling',
+      imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80',
+      descriptionEn: 'A luxury watch marketplace built with Next.js 15, custom product customizers, and high-conversion Stripe checkout.',
+      descriptionNo: 'En markedsplass for luksusklokker bygget med Next.js 15, tilpassede produktvelgere og Stripe-betaling.',
+      link: 'https://moldeweb.no/portfolio',
+      order: 1
+    },
+    {
+      id: 'p2',
+      titleEn: 'Fjord Explorer Tourism App',
+      titleNo: 'Fjord Explorer Booking-app',
+      categoryEn: 'Mobile & Web App',
+      categoryNo: 'Mobil & Nettapp',
+      imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+      descriptionEn: 'Interactive Norwegian tourism reservation platform with live weather tracking, interactive maps, and instant digital tickets.',
+      descriptionNo: 'Interaktivt norsk turistreservasjonssystem med levende værmeldinger, opplevelseskart og umiddelbare billetter.',
+      link: 'https://moldeweb.no/portfolio',
+      order: 2
+    },
+    {
+      id: 'p3',
+      titleEn: 'Nordic B2B SaaS Growth',
+      titleNo: 'Nordisk B2B SaaS-vekst',
+      categoryEn: 'Google Ads & Marketing',
+      categoryNo: 'Google Ads & Markedsføring',
+      imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+      descriptionEn: 'High-intent search keyword strategies driving a 340% ROAS increase for Scandinavian tech companies.',
+      descriptionNo: 'Strategier for søkeord med høy kjøpshensikt som ga 340 % økning i ROAS for skandinaviske teknologibedrifter.',
+      link: 'https://moldeweb.no/portfolio',
+      order: 3
+    },
+    {
+      id: 'p4',
+      titleEn: 'Nordic Roast Coffee Rebrand',
+      titleNo: 'Nordic Roast Kaffe Rebranding',
+      categoryEn: 'Meta & Facebook Ads',
+      categoryNo: 'Meta & Facebook Annonser',
+      imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80',
+      descriptionEn: 'Dynamic Meta video ad creative campaigns generating 4.2x ROAS for subscription coffee boxes across the Nordics.',
+      descriptionNo: 'Dynamiske Meta-videoannonser som genererte 4,2x ROAS for abonnementsbasert kaffe i hele Norden.',
+      link: 'https://moldeweb.no/portfolio',
+      order: 4
+    },
+    {
+      id: 'p5',
+      titleEn: 'FinTech Analytics Dashboard',
+      titleNo: 'FinTech Analyse-dashbord',
+      categoryEn: 'UI/UX & Web Dev',
+      categoryNo: 'UI/UX & Webutvikling',
+      imageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80',
+      descriptionEn: 'Real-time financial management platform built for institutional wealth managers with high density data visualization.',
+      descriptionNo: 'Sanntids plattform for finansiell styring bygget for institusjonelle forvaltere med datatett visualisering.',
+      link: 'https://moldeweb.no/portfolio',
+      order: 5
+    },
+    {
+      id: 'p6',
+      titleEn: 'EcoStay Hotels Organic Growth',
+      titleNo: 'EcoStay Hoteller Organisk Vekst',
+      categoryEn: 'SEO Strategy',
+      categoryNo: 'SEO-strategi',
+      imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80',
+      descriptionEn: 'Comprehensive technical SEO overhaul and multilingual content strategy resulting in top 3 search positions.',
+      descriptionNo: 'Omfattende teknisk SEO-overhaling og flerspråklig innholdsstrategi som ga topp 3-plasseringer i søk.',
+      link: 'https://moldeweb.no/portfolio',
+      order: 6
+    }
+  ],
+  portfolioSettings: {
+    titleEn: 'Our Work',
+    titleNo: 'Vårt Arbeid',
+    recommendedDimensions: '1200 x 800 px'
+  },
+  packages: [
+    {
+      id: 'pkg1',
+      nameEn: 'Starter',
+      nameNo: 'Oppstart',
+      priceMonthly: '199',
+      priceYearly: '1990',
+      yearlyDiscountEn: 'Save 17%',
+      yearlyDiscountNo: 'Spar 17%',
+      durationEn: 'month',
+      durationNo: 'måned',
+      featuresEn: ['5 Custom Pages', 'Basic Technical SEO', 'Mobile & Tablet Responsive', 'Contact Form Integration'],
+      featuresNo: ['5 Sider', 'Grunnleggende Teknisk SEO', 'Mobil- og Nettbrettresponsiv', 'Kontaktskjema-integrasjon'],
+      isPopular: false,
+      order: 1
+    },
+    {
+      id: 'pkg2',
+      nameEn: 'Professional Growth',
+      nameNo: 'Profesjonell Vekst',
+      priceMonthly: '499',
+      priceYearly: '4990',
+      yearlyDiscountEn: 'Save 17%',
+      yearlyDiscountNo: 'Spar 17%',
+      durationEn: 'month',
+      durationNo: 'måned',
+      featuresEn: ['Up to 15 Custom Pages', 'Advanced Technical SEO & Schema', 'Next.js & CMS Integration', 'Social Media Ads Setup', 'Priority Email & Chat Support'],
+      featuresNo: ['Opptil 15 Sider', 'Avansert Teknisk SEO & Schema', 'Next.js & CMS Integrasjon', 'Oppsett av Social Media Annonser', 'Prioritert E-post & Chat Support'],
+      isPopular: true,
+      order: 2
+    },
+    {
+      id: 'pkg3',
+      nameEn: 'Enterprise Scale',
+      nameNo: 'Bedrift Skalering',
+      priceMonthly: '999',
+      priceYearly: '9990',
+      yearlyDiscountEn: 'Save 17%',
+      yearlyDiscountNo: 'Spar 17%',
+      durationEn: 'month',
+      durationNo: 'måned',
+      featuresEn: ['Unlimited Custom Pages', 'Full Marketing Suite & Ad Campaigns', 'Dedicated Growth Manager', 'Custom API & Database Integrations', '24/7 SLA & Direct Phone Support'],
+      featuresNo: ['Ubegrenset Skreddersydde Sider', 'Full Markedsføringspakke & Annonser', 'Dedikert Vekstrådgiver', 'Tilpassede API & DB Integrasjoner', '24/7 SLA & Direkte Telefonsupport'],
+      isPopular: false,
+      order: 3
+    }
+  ],
+  packageSettings: {
+    titleEn: 'Packages & Pricing',
+    titleNo: 'Pakker & Priser',
+    showYearlyToggle: true,
+    yearlyDiscountPercentage: 17
+  },
+  paymentSettings: {
+    gateway: 'none',
+    apiKey: '',
+    isTestMode: true
+  },
+  navItems: [
+    { id: 'n1', labelEn: 'Services', labelNo: 'Tjenester', href: '/services', order: 1 },
+    { id: 'n2', labelEn: 'Portfolio', labelNo: 'Portfolio', href: '/portfolio', order: 2 },
+    { id: 'n3', labelEn: 'Packages', labelNo: 'Pakker', href: '/packages', order: 3 },
+    { id: 'n4', labelEn: 'About', labelNo: 'Om oss', href: '/about', order: 4 },
+    { id: 'n5', labelEn: 'Contact', labelNo: 'Kontakt', href: '/contact', order: 5 },
+  ],
+  contactInfo: {
+    phone: '+47 123 45 678',
+    email: 'hello@moldeweb.no',
+    addressEn: 'Storgata 1, 6413 Molde, Norway',
+    addressNo: 'Storgata 1, 6413 Molde, Norge',
+  },
+  siteSettings: {
+    logoUrl: '',
+    showLanguageSwitcher: true,
+    showCurrencySwitcher: true,
+    showThemeSwitcher: true,
+    defaultCurrency: 'NOK',
+    exchangeRate: 10.5,
+    navCtaLabelEn: 'Get Started',
+    navCtaLabelNo: 'Kom i gang',
+    navCtaLink: '/contact',
+  },
+  footerSettings: {
+    aboutEn: 'Building high-performance web applications and growth strategies from Norway.',
+    aboutNo: 'Bygger høytytende nettapplikasjoner og vekststrategier fra Norge.',
+    copyrightEn: 'All rights reserved.',
+    copyrightNo: 'Alle rettigheter forbeholdt.',
+  },
   seo: [
     {
       pagePath: '/',
@@ -295,6 +376,34 @@ const DEFAULT_DB: DatabaseSchema = {
     messageEn: 'Get a free SEO audit today!',
     messageNo: 'Få en gratis SEO-analyse i dag!',
     link: '/contact'
+  },
+  account: {
+    email: 'admin@moldeweb.no',
+    username: 'admin',
+    password: 'admin',
+    updatedAt: new Date().toISOString()
+  },
+  databaseSettings: {
+    enabled: false,
+    provider: 'postgresql',
+    host: 'localhost',
+    port: '5432',
+    database: 'moldeweb_db',
+    user: 'postgres',
+    password: '',
+    ssl: true,
+    connectionString: 'postgresql://postgres:password@localhost:5432/moldeweb_db'
+  },
+  firebaseAuthSettings: {
+    enabled: true,
+    apiKey: 'AIzaSyBv5CDEmjTkKkm1Dww-tVqzoT9Of5s9NSA',
+    authDomain: 'molde-web-3dc3e.firebaseapp.com',
+    projectId: 'molde-web-3dc3e',
+    storageBucket: 'molde-web-3dc3e.firebasestorage.app',
+    messagingSenderId: '930998002896',
+    appId: '1:930998002896:web:7e8406f8849c0a86a4ead5',
+    enableEmailAuth: true,
+    enableGoogleAuth: true
   }
 };
 

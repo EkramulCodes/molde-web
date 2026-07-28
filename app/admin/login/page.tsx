@@ -117,12 +117,42 @@ function LoginForm() {
   );
 }
 
+import Script from 'next/script';
+
 export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-bg-deep topographic-bg flex flex-col justify-center items-center px-4 py-12">
       <Suspense fallback={<div className="text-slate text-sm font-mono">Loading login form...</div>}>
         <LoginForm />
       </Suspense>
+
+      {/* Firebase SDK Module Script */}
+      <Script id="firebase-login-auth" strategy="afterInteractive" type="module">{`
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyBv5CDEmjTkKkm1Dww-tVqzoT9Of5s9NSA",
+          authDomain: "molde-web-3dc3e.firebaseapp.com",
+          projectId: "molde-web-3dc3e",
+          storageBucket: "molde-web-3dc3e.firebasestorage.app",
+          messagingSenderId: "930998002896",
+          appId: "1:930998002896:web:7e8406f8849c0a86a4ead5",
+          measurementId: "G-DKFY521ZQM"
+        };
+
+        // Initialize Firebase
+        try {
+          const app = initializeApp(firebaseConfig);
+          if (typeof window !== 'undefined') {
+            window.firebaseApp = app;
+          }
+        } catch (e) {
+          console.log("Firebase initialized");
+        }
+      `}</Script>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 export const en = {
   header: {
     services: 'Services',
+    portfolio: 'Portfolio',
+    packages: 'Packages',
     about: 'About',
     contact: 'Contact',
     admin: 'Admin',
@@ -69,6 +71,26 @@ export const en = {
     rights: 'All rights reserved.',
     tagline: 'Building high-performance web applications and growth strategies from Norway.',
     quickLinks: 'Quick Links',
+  },
+  portfolio: {
+    title: 'Our Work',
+  },
+  packages: {
+    title: 'Packages & Pricing',
+    monthly: 'Monthly',
+    yearly: 'Yearly',
+    save: 'Save',
+  },
+  checkout: {
+    title: 'Checkout',
+    billing: 'Billing Information',
+    payment: 'Payment Method',
+    summary: 'Order Summary',
+    total: 'Total',
+    pay: 'Pay Now',
+  },
+  currency: {
+    label: 'Currency',
   }
 };
 

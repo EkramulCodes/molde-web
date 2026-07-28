@@ -17,22 +17,59 @@ import {
   FiLogOut,
   FiExternalLink,
   FiMenu,
-  FiX
+  FiX,
+  FiBriefcase,
+  FiPackage,
+  FiCreditCard,
+  FiUser,
+  FiDatabase,
+  FiShield
 } from 'react-icons/fi';
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const links = [
-    { href: '/admin', label: 'Overview', icon: FiHome },
-    { href: '/admin/content', label: 'Content & Media', icon: FiFileText },
-    { href: '/admin/services', label: 'Services CRUD', icon: FiLayers },
-    { href: '/admin/design', label: 'Design & Theme', icon: FiDroplet },
-    { href: '/admin/seo', label: 'SEO Meta Tags', icon: FiSearch },
-    { href: '/admin/leads', label: 'Leads & Form', icon: FiInbox },
-    { href: '/admin/promo', label: 'Promo Bar', icon: FiLayout },
-    { href: '/admin/settings', label: 'Settings', icon: FiSettings },
+  const groups = [
+    {
+      title: 'General',
+      links: [
+        { href: '/admin', label: 'Overview', icon: FiHome },
+        { href: '/admin/leads', label: 'Leads & Form', icon: FiInbox },
+        { href: '/admin/account', label: 'Account', icon: FiUser },
+      ]
+    },
+    {
+      title: 'Pages',
+      links: [
+        { href: '/admin/content', label: 'Home Page', icon: FiFileText },
+        { href: '/admin/portfolio', label: 'Portfolio', icon: FiBriefcase },
+        { href: '/admin/packages', label: 'Packages', icon: FiPackage },
+        { href: '/admin/services', label: 'Services', icon: FiLayers },
+      ]
+    },
+    {
+      title: 'Marketing',
+      links: [
+        { href: '/admin/promo', label: 'Promo Bar', icon: FiLayout },
+        { href: '/admin/seo', label: 'SEO Meta Tags', icon: FiSearch },
+      ]
+    },
+    {
+      title: 'Integrations',
+      links: [
+        { href: '/admin/database', label: 'SQL Database', icon: FiDatabase },
+        { href: '/admin/firebase-auth', label: 'Firebase Auth', icon: FiShield },
+        { href: '/admin/payments', label: 'Payments', icon: FiCreditCard },
+      ]
+    },
+    {
+      title: 'Configuration',
+      links: [
+        { href: '/admin/design', label: 'Design & Theme', icon: FiDroplet },
+        { href: '/admin/settings', label: 'Settings', icon: FiSettings },
+      ]
+    }
   ];
 
   return (
@@ -70,26 +107,35 @@ export default function AdminSidebar() {
           </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {links.map((link) => {
-            const Icon = link.icon;
-            const active = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                  active 
-                    ? 'bg-teal/15 text-teal font-semibold shadow-sm' 
-                    : 'text-slate hover:bg-slate/5 hover:text-ink'
-                }`}
-              >
-                <Icon size={18} className={active ? 'text-teal' : 'text-slate'} />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
+        <nav className="flex-1 p-3 space-y-6 overflow-y-auto custom-scrollbar">
+          {groups.map((group) => (
+            <div key={group.title} className="space-y-1">
+              <h3 className="px-3 text-[10px] font-bold text-slate/50 uppercase tracking-widest mb-2">
+                {group.title}
+              </h3>
+              <div className="space-y-1">
+                {group.links.map((link) => {
+                  const Icon = link.icon;
+                  const active = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-all ${
+                        active 
+                          ? 'bg-teal/15 text-teal font-semibold shadow-sm' 
+                          : 'text-slate hover:bg-slate/5 hover:text-ink'
+                      }`}
+                    >
+                      <Icon size={18} className={active ? 'text-teal' : 'text-slate'} />
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         <div className="p-4 border-t border-slate/10 space-y-2">

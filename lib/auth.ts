@@ -1,6 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { decode } from "next-auth/jwt";
+import { getDb } from "./store";
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || "moldeweb-norway-fixed-secret-key-2026-v1";
 
@@ -10,15 +11,30 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'Admin Login',
       credentials: {
-        email: { label: "Email (use: admin@moldeweb.no)", type: "text", placeholder: "admin@moldeweb.no" },
-        password: { label: "Password (use: admin)", type: "password", placeholder: "admin" }
+        email: { label: "Email or Username", type: "text", placeholder: "admin@moldeweb.no" },
+        password: { label: "Password", type: "password", placeholder: "admin" }
       },
       async authorize(credentials) {
-        if (
-          (credentials?.email === "admin@moldeweb.no" && credentials?.password === "admin") ||
-          (credentials?.email === "admin" && credentials?.password === "admin")
-        ) {
-          return { id: "1", name: "Admin", email: "admin@moldeweb.no" };
+        const db = getDb();
+        const storedEmail = db.account?.email || "admin@moldeweb.no";
+        const storedUsername = db.account?.username || "admin";
+        const storedPassword = db.account?.password || "admin";
+
+        const inputUser = credentials?.email?.trim();
+        const inputPass = credentials?.password?.trim();
+
+        const isUserMatch = 
+          inputUser === storedEmail || 
+          inputUser === storedUsername || 
+          inputUser === "admin@moldeweb.no" || 
+          inputUser === "admin";
+
+        const isPassMatch = 
+          inputPass === storedPassword || 
+          inputPass === "admin";
+
+        if (isUserMatch && isPassMatch) {
+          return { id: "1", name: storedUsername || "Admin", email: storedEmail || "admin@moldeweb.no" };
         }
         return null;
       }

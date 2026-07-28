@@ -30,6 +30,9 @@ interface ServiceItem {
   featuresEn: string[];
   featuresNo: string[];
   price?: string;
+  purchaseLabelEn?: string;
+  purchaseLabelNo?: string;
+  purchaseLink?: string;
   status: 'active' | 'hidden';
   order: number;
   metaTitle?: string;
@@ -132,6 +135,9 @@ export default function ServicesManager() {
       featuresEn: ['Custom UI Design', 'Next.js Frontend'],
       featuresNo: ['Skreddersydd UI Design', 'Next.js Utvikling'],
       price: '$1,500',
+      purchaseLabelEn: 'Purchase Service',
+      purchaseLabelNo: 'Kjøp tjeneste',
+      purchaseLink: '/contact',
       status: 'active',
       metaTitle: '',
       metaDescription: '',
@@ -446,6 +452,39 @@ export default function ServicesManager() {
                     onChange={(e) => setEditingService({ ...editingService, price: e.target.value })}
                     className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
                     placeholder="From $2,500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase text-slate">Purchase Button Label (English)</label>
+                  <input
+                    type="text"
+                    value={editingService.purchaseLabelEn || ''}
+                    onChange={(e) => setEditingService({ ...editingService, purchaseLabelEn: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                    placeholder="Purchase Service"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase text-slate">Purchase Button Label (Norwegian)</label>
+                  <input
+                    type="text"
+                    value={editingService.purchaseLabelNo || ''}
+                    onChange={(e) => setEditingService({ ...editingService, purchaseLabelNo: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                    placeholder="Kjøp tjeneste"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase text-slate">Purchase Action Link</label>
+                  <input
+                    type="text"
+                    value={editingService.purchaseLink || ''}
+                    onChange={(e) => setEditingService({ ...editingService, purchaseLink: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                    placeholder="/checkout?item=..."
                   />
                 </div>
 

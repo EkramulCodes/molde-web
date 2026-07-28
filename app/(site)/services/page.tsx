@@ -1,6 +1,6 @@
 'use client';
 
-import { useLanguage } from '../../../context/LanguageContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiCheckCircle, FiArrowRight } from 'react-icons/fi';
 import Link from 'next/link';
 
@@ -125,12 +125,12 @@ export default function Services() {
                   )}
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-4 flex flex-wrap items-center gap-4">
                   <Link 
-                    href="/contact" 
+                    href={`/service-details/${svc.id}`} 
                     className="delta-gold-btn inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 font-bold uppercase tracking-widest text-xs sm:text-sm shadow-lg shadow-gold/20 hover:scale-[1.02] transition-all rounded-sm w-full sm:w-auto"
                   >
-                    <span>{t.services.requestQuote}</span>
+                    <span>{language === 'en' ? 'Service Details' : 'Tjenestedetaljer'}</span>
                     <FiArrowRight size={16} />
                   </Link>
                 </div>

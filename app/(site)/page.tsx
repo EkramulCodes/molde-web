@@ -1,11 +1,15 @@
 'use client';
 
 import { useLanguage } from '../../context/LanguageContext';
-import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
+import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiArrowRight, FiCheckCircle, FiBriefcase } from 'react-icons/fi';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function Home() {
-  const { t, language, services: dynamicServices } = useLanguage();
+  const { t, language, services: dynamicServices, portfolio, packages, packageSettings, siteSettings, formatPrice } = useLanguage();
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+
+  const yearlyDiscount = packageSettings?.yearlyDiscountPercentage || 17;
 
   const getIcon = (iconName?: string) => {
     switch (iconName) {
@@ -71,10 +75,10 @@ export default function Home() {
           
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <Link 
-              href="/contact" 
+              href={siteSettings?.heroCtaLink || '/contact'} 
               className="delta-gold-btn px-8 py-4 font-bold uppercase tracking-widest text-xs sm:text-sm hover:scale-[1.02] shadow-xl shadow-gold/20 transition-all text-center rounded-sm min-h-[48px] flex items-center justify-center gap-2"
             >
-              <span>{t.hero.ctaPrimary}</span>
+              <span>{language === 'en' ? siteSettings?.heroCtaLabelEn : siteSettings?.heroCtaLabelNo}</span>
               <FiArrowRight size={16} />
             </Link>
             <Link 
@@ -135,23 +139,187 @@ export default function Home() {
                       {svc.id.toUpperCase()}
                     </span>
                     <h3 className="font-display font-bold text-base sm:text-lg mb-2 uppercase tracking-wide text-ink">{svc.title}</h3>
-                    <p className="text-xs text-slate leading-relaxed">{svc.description}</p>
+                    <p className="text-xs text-slate leading-relaxed line-clamp-3">{svc.description}</p>
                     {svc.price && (
-                      <p className="mt-3 text-xs font-mono font-bold text-gold">{svc.price}</p>
+                      <p className="mt-3 text-xs font-mono font-bold text-gold">{formatPrice(svc.price)}</p>
                     )}
                   </div>
-                  <div className="pt-6 border-t border-slate/10 mt-6">
-                    <Link href="/contact" className="text-[11px] font-mono font-bold uppercase tracking-wider text-teal group-hover:text-gold transition-colors inline-flex items-center gap-1.5">
-                      <span>{t.services.requestQuote}</span>
+                  <div className="pt-6 border-t border-slate/10 mt-6 flex flex-col gap-3">
+                    <Link href={`/service-details/${svc.id}`} className="text-[11px] font-mono font-bold uppercase tracking-wider text-teal group-hover:text-gold transition-colors inline-flex items-center gap-1.5">
+                      <span>{language === 'en' ? 'Service Details' : 'Tjenestedetaljer'}</span>
                       <FiArrowRight size={12} />
                     </Link>
+                    {(svc as any).purchaseLink && (
+                      <Link 
+                        href={(svc as any).purchaseLink} 
+                        className="delta-gold-btn w-full py-2.5 text-[10px] font-bold uppercase tracking-widest text-center rounded-sm"
+                      >
+                        {language === 'en' ? ((svc as any).purchaseLabelEn || 'Purchase') : ((svc as any).purchaseLabelNo || 'Kjøp')}
+                      </Link>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {/* Book a Meeting CTA */}
+          <div className="pt-8 flex justify-center">
+            <Link 
+              href={siteSettings?.bookMeetingCtaLink || '/contact'}
+              className="group flex items-center gap-4 px-10 py-5 bg-teal text-white rounded-2xl shadow-2xl shadow-teal/20 hover:scale-[1.02] transition-all"
+            >
+              <div className="flex flex-col items-start">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] opacity-70">Ready to start?</span>
+                <span className="text-sm sm:text-base font-bold uppercase tracking-widest">
+                  {language === 'en' ? siteSettings?.bookMeetingCtaLabelEn : siteSettings?.bookMeetingCtaLabelNo}
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                <FiArrowRight size={20} />
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
+
+      {/* Portfolio Showcase Section */}
+      <section className="py-16 sm:py-24 bg-bg-primary border-t border-slate/10 px-4 sm:px-6 lg:px-16 relative z-10">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <span className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-teal block mb-2">Success Stories</span>
+              <h2 className="font-display text-2xl sm:text-4xl font-bold text-ink uppercase tracking-wide">
+                {t.portfolio.title}
+              </h2>
+            </div>
+            <Link 
+              href="/portfolio" 
+              className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-teal hover:text-gold transition-colors"
+            >
+              <span>{language === 'no' ? 'Se alt arbeid' : 'View All Work'}</span>
+              <FiArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(portfolio || []).slice(0, 6).map((item) => (
+              <div key={item.id} className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-bg-deep border border-slate/10">
+                {item.imageUrl ? (
+                  <img 
+                    src={item.imageUrl} 
+                    alt={language === 'en' ? item.titleEn : item.titleNo} 
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-teal/10">
+                    <FiBriefcase size={60} />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-teal mb-2">
+                    {language === 'en' ? item.categoryEn : item.categoryNo}
+                  </span>
+                  <h3 className="font-display font-bold text-xl text-white uppercase tracking-wide mb-2">
+                    {language === 'en' ? item.titleEn : item.titleNo}
+                  </h3>
+                  <Link 
+                    href={item.link || '/portfolio'} 
+                    className="text-[10px] font-mono font-bold uppercase tracking-widest text-white/60 group-hover:text-gold transition-colors inline-flex items-center gap-2"
+                  >
+                    <span>{language === 'en' ? 'View Case Study' : 'Se Prosjekt'}</span>
+                    <FiArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Packages Section */}
+      <section className="py-16 sm:py-24 bg-bg-deep border-t border-slate/10 px-4 sm:px-6 lg:px-16 relative z-10">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <div className="text-center space-y-4">
+            <span className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-teal block mb-2">Transparent Pricing</span>
+            <h2 className="font-display text-2xl sm:text-4xl font-bold text-ink uppercase tracking-wide">
+              {t.packages.title}
+            </h2>
+
+            {packageSettings?.showYearlyToggle && (
+              <div className="flex items-center justify-center gap-4 pt-2">
+                <span className={`text-xs font-bold uppercase tracking-widest ${billingCycle === 'monthly' ? 'text-teal' : 'text-slate'}`}>
+                  {t.packages.monthly}
+                </span>
+                <button 
+                  onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                  className="relative w-12 h-6 rounded-full bg-slate/20 transition-colors focus:outline-none"
+                >
+                  <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-teal transition-transform ${billingCycle === 'yearly' ? 'translate-x-6' : ''}`} />
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-bold uppercase tracking-widest ${billingCycle === 'yearly' ? 'text-teal' : 'text-slate'}`}>
+                    {t.packages.yearly}
+                  </span>
+                  <span className="bg-gold/20 text-gold text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-tighter">
+                    {t.packages.save} {yearlyDiscount}%
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {(packages || []).slice(0, 3).sort((a, b) => a.order - b.order).map((pkg) => (
+              <div 
+                key={pkg.id} 
+                className={`bg-bg-primary p-8 rounded-2xl border ${pkg.isPopular ? 'border-teal shadow-xl ring-1 ring-teal/20' : 'border-slate/10 shadow-sm'} flex flex-col relative`}
+              >
+                {pkg.isPopular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gold text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-full shadow-lg">
+                    {language === 'no' ? 'Mest Populær' : 'Most Popular'}
+                  </div>
+                )}
+                
+                <div className="mb-6">
+                  <h3 className="font-display font-bold text-xl text-ink uppercase tracking-wide mb-2">
+                    {language === 'en' ? pkg.nameEn : pkg.nameNo}
+                  </h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-teal">
+                      {formatPrice(billingCycle === 'monthly' ? pkg.priceMonthly : pkg.priceYearly)}
+                    </span>
+                    <span className="text-slate text-xs">/{language === 'en' ? pkg.durationEn : pkg.durationNo}</span>
+                  </div>
+                  {billingCycle === 'yearly' && (
+                    <p className="text-[10px] font-bold text-gold mt-1 uppercase tracking-widest">
+                      {language === 'en' ? pkg.yearlyDiscountEn : pkg.yearlyDiscountNo}
+                    </p>
+                  )}
+                </div>
+                <ul className="space-y-3 mb-8 flex-1">
+                  {(language === 'en' ? pkg.featuresEn : pkg.featuresNo).map((f, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-ink">
+                      <FiCheckCircle className="text-teal mt-0.5" size={14} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link 
+                  href={`/checkout?type=package&id=${pkg.id}&cycle=${billingCycle}`} 
+                  className={`w-full py-3 text-[10px] font-bold uppercase tracking-widest text-center rounded-sm transition-all ${
+                    pkg.isPopular ? 'bg-teal text-white shadow-lg shadow-teal/10 hover:bg-teal/90' : 'bg-bg-deep text-ink border border-slate/10 hover:border-teal'
+                  }`}
+                >
+                  {language === 'no' ? 'Velg Pakke' : 'Select Package'}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
 
       {/* Metrics Section */}
       <section className="py-8 sm:py-12 bg-ink px-4 sm:px-6 lg:px-16 font-mono border-t border-slate/10">

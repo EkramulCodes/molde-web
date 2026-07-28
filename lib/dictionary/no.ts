@@ -3,6 +3,8 @@ import { en } from './en';
 export const no: typeof en = {
   header: {
     services: 'Tjenester',
+    portfolio: 'Portfolio',
+    packages: 'Pakker',
     about: 'Om oss',
     contact: 'Kontakt',
     admin: 'Admin',
@@ -71,6 +73,26 @@ export const no: typeof en = {
     rights: 'Alle rettigheter forbeholdt.',
     tagline: 'Bygger høytytende nettapplikasjoner og vekststrategier fra Norge.',
     quickLinks: 'Hurtiglenker',
+  },
+  portfolio: {
+    title: 'Vårt Arbeid',
+  },
+  packages: {
+    title: 'Pakker & Priser',
+    monthly: 'Månedlig',
+    yearly: 'Årlig',
+    save: 'Spar',
+  },
+  checkout: {
+    title: 'Kasse',
+    billing: 'Faktureringsinformasjon',
+    payment: 'Betalingsmetode',
+    summary: 'Ordresammendrag',
+    total: 'Totalt',
+    pay: 'Betal nå',
+  },
+  currency: {
+    label: 'Valuta',
   }
 };
 

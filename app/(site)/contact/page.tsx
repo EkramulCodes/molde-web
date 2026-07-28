@@ -1,6 +1,6 @@
 'use client';
 
-import { useLanguage } from '../../../context/LanguageContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 
 export default function Contact() {

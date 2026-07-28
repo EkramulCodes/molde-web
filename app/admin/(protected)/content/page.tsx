@@ -26,7 +26,7 @@ import { notifyCmsUpdated } from '@/context/LanguageContext';
 import { compressImage } from '@/lib/utils';
 
 export default function ContentManager() {
-  const [activeTab, setActiveTab] = useState<'hero' | 'about' | 'contact' | 'footer'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'about' | 'contact' | 'portfolio' | 'packages' | 'footer'>('hero');
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -212,6 +212,8 @@ export default function ContentManager() {
         {[
           { id: 'hero', label: 'Hero Section' },
           { id: 'about', label: 'About Page' },
+          { id: 'portfolio', label: 'Portfolio Page' },
+          { id: 'packages', label: 'Packages Page' },
           { id: 'contact', label: 'Contact Section' },
           { id: 'footer', label: 'Footer Copy' },
         ].map((tab) => (
@@ -315,6 +317,39 @@ export default function ContentManager() {
                   className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
                 />
               </div>
+
+              <div className="space-y-2 md:col-span-2 border-t border-slate/10 pt-4">
+                <h3 className="text-xs font-bold uppercase text-teal mb-4">Hero CTA Configuration</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold uppercase text-slate">Hero CTA Label (English)</label>
+                    <input
+                      type="text"
+                      value={content.siteSettings?.heroCtaLabelEn || ''}
+                      onChange={(e) => setContent((prev: any) => ({ ...prev, siteSettings: { ...prev.siteSettings, heroCtaLabelEn: e.target.value } }))}
+                      className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold uppercase text-slate">Hero CTA Label (Norwegian)</label>
+                    <input
+                      type="text"
+                      value={content.siteSettings?.heroCtaLabelNo || ''}
+                      onChange={(e) => setContent((prev: any) => ({ ...prev, siteSettings: { ...prev.siteSettings, heroCtaLabelNo: e.target.value } }))}
+                      className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="block text-xs font-bold uppercase text-slate">Hero CTA Link URL</label>
+                    <input
+                      type="text"
+                      value={content.siteSettings?.heroCtaLink || ''}
+                      onChange={(e) => setContent((prev: any) => ({ ...prev, siteSettings: { ...prev.siteSettings, heroCtaLink: e.target.value } }))}
+                      className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -388,6 +423,60 @@ export default function ContentManager() {
           </div>
         )}
 
+        {/* PORTFOLIO TAB */}
+        {activeTab === 'portfolio' && content?.portfolio && (
+          <div className="bg-bg-primary rounded-2xl p-8 border border-slate/10 shadow-sm space-y-6">
+            <h2 className="font-display text-xl font-bold text-ink border-b border-slate/10 pb-4">Portfolio Page & Showcase</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase text-slate">Main Title (English)</label>
+                <input
+                  type="text"
+                  value={content.portfolio.titleEn || ''}
+                  onChange={(e) => handleChange('portfolio', 'titleEn', e.target.value)}
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase text-slate">Main Title (Norwegian)</label>
+                <input
+                  type="text"
+                  value={content.portfolio.titleNo || ''}
+                  onChange={(e) => handleChange('portfolio', 'titleNo', e.target.value)}
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PACKAGES TAB */}
+        {activeTab === 'packages' && content?.packages && (
+          <div className="bg-bg-primary rounded-2xl p-8 border border-slate/10 shadow-sm space-y-6">
+            <h2 className="font-display text-xl font-bold text-ink border-b border-slate/10 pb-4">Packages Page & Pricing</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase text-slate">Main Title (English)</label>
+                <input
+                  type="text"
+                  value={content.packages.titleEn || ''}
+                  onChange={(e) => handleChange('packages', 'titleEn', e.target.value)}
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase text-slate">Main Title (Norwegian)</label>
+                <input
+                  type="text"
+                  value={content.packages.titleNo || ''}
+                  onChange={(e) => handleChange('packages', 'titleNo', e.target.value)}
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* CONTACT TAB */}
         {activeTab === 'contact' && content?.contact && (
           <div className="bg-bg-primary rounded-2xl p-8 border border-slate/10 shadow-sm space-y-6">
@@ -440,10 +529,48 @@ export default function ContentManager() {
         {/* FOOTER TAB */}
         {activeTab === 'footer' && content?.footer && (
           <div className="bg-bg-primary rounded-2xl p-8 border border-slate/10 shadow-sm space-y-6">
-            <h2 className="font-display text-xl font-bold text-ink border-b border-slate/10 pb-4">Footer Text</h2>
+            <h2 className="font-display text-xl font-bold text-ink border-b border-slate/10 pb-4">Footer Text & Details</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2 md:col-span-2">
+                <label className="block text-xs font-bold uppercase text-slate">Footer &quot;About&quot; Text (English)</label>
+                <textarea
+                  rows={3}
+                  value={content.footerSettings?.aboutEn || ''}
+                  onChange={(e) => setContent((prev: any) => ({ ...prev, footerSettings: { ...prev.footerSettings, aboutEn: e.target.value } }))}
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="block text-xs font-bold uppercase text-slate">Footer &quot;About&quot; Text (Norwegian)</label>
+                <textarea
+                  rows={3}
+                  value={content.footerSettings?.aboutNo || ''}
+                  onChange={(e) => setContent((prev: any) => ({ ...prev, footerSettings: { ...prev.footerSettings, aboutNo: e.target.value } }))}
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+              
               <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase text-slate">Copyright Line (English)</label>
+                <input
+                  type="text"
+                  value={content.footerSettings?.copyrightEn || ''}
+                  onChange={(e) => setContent((prev: any) => ({ ...prev, footerSettings: { ...prev.footerSettings, copyrightEn: e.target.value } }))}
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase text-slate">Copyright Line (Norwegian)</label>
+                <input
+                  type="text"
+                  value={content.footerSettings?.copyrightNo || ''}
+                  onChange={(e) => setContent((prev: any) => ({ ...prev, footerSettings: { ...prev.footerSettings, copyrightNo: e.target.value } }))}
+                  className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+
+              <div className="space-y-2 border-t border-slate/10 pt-4">
                 <label className="block text-xs font-bold uppercase text-slate">Rights Reserved Line (English)</label>
                 <input
                   type="text"
@@ -453,7 +580,7 @@ export default function ContentManager() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 border-t border-slate/10 pt-4">
                 <label className="block text-xs font-bold uppercase text-slate">Rights Reserved Line (Norwegian)</label>
                 <input
                   type="text"

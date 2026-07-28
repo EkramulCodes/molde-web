@@ -10,6 +10,8 @@ export default function PromoManager() {
     messageEn: 'Get a free SEO audit today!',
     messageNo: 'Få en gratis SEO-analyse i dag!',
     link: '/contact',
+    slidingEnabled: true,
+    dismissible: true,
   });
 
   const [loading, setLoading] = useState(true);
@@ -160,6 +162,36 @@ export default function PromoManager() {
                 placeholder="/contact or https://..."
                 className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
               />
+            </div>
+
+            <div className="space-y-4 md:col-span-2 pt-4 border-t border-slate/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-ink">Enable Sliding Animation</h4>
+                  <p className="text-[11px] text-slate">Allow the promo text to slide from right to left (marquee effect).</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPromo({ ...promo, slidingEnabled: !promo.slidingEnabled })}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${promo.slidingEnabled ? 'bg-teal' : 'bg-slate/30'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${promo.slidingEnabled ? 'translate-x-5' : ''}`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-ink">Allow Dismissal</h4>
+                  <p className="text-[11px] text-slate">Allow users to close the promo bar temporarily.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPromo({ ...promo, dismissible: !promo.dismissible })}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${promo.dismissible ? 'bg-teal' : 'bg-slate/30'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${promo.dismissible ? 'translate-x-5' : ''}`} />
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -3,53 +3,41 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { en } from '../lib/dictionary/en';
 import { no } from '../lib/dictionary/no';
+import { 
+  Language, 
+  PromoData, 
+  DesignData, 
+  ServiceItem, 
+  PortfolioItem, 
+  PackageItem, 
+  NavItem, 
+  ContactInfo, 
+  SiteSettings, 
+  PortfolioSettings, 
+  PackageSettings, 
+  FooterSettings 
+} from '../lib/types';
 
-export type Language = 'en' | 'no';
 type Dictionary = typeof en;
-
-export interface PromoState {
-  active: boolean;
-  messageEn: string;
-  messageNo: string;
-  link: string;
-}
-
-export interface DesignState {
-  siteName: string;
-  tagline: string;
-  logoUrl: string;
-  primaryColor: string;
-  accentColor: string;
-  bgDeepColor: string;
-  bgPrimaryColor: string;
-  textColor: string;
-  fontFamily: string;
-  enableContourBg: boolean;
-}
-
-export interface ServiceStateItem {
-  id: string;
-  slug: string;
-  icon: string;
-  imageUrl?: string;
-  titleEn: string;
-  titleNo: string;
-  descriptionEn: string;
-  descriptionNo: string;
-  featuresEn: string[];
-  featuresNo: string[];
-  price?: string;
-  status: 'active' | 'hidden';
-  order: number;
-}
 
 interface LanguageContextProps {
   language: Language;
-  toggleLanguage: () => void;
+  setLanguage: (l: Language) => void;
   t: Dictionary;
-  promo: PromoState | null;
-  design: DesignState | null;
-  services: ServiceStateItem[];
+  promo: PromoData | null;
+  design: DesignData | null;
+  services: ServiceItem[];
+  portfolio: PortfolioItem[];
+  portfolioSettings: PortfolioSettings;
+  packages: PackageItem[];
+  packageSettings: PackageSettings;
+  navItems: NavItem[];
+  contactInfo: ContactInfo;
+  siteSettings: SiteSettings;
+  footerSettings: FooterSettings;
+  currency: 'NOK' | 'USD';
+  setCurrency: (c: 'NOK' | 'USD') => void;
+  formatPrice: (price: number | string) => string;
   refreshDynamicData: () => void;
 }
 
@@ -78,46 +66,87 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const [dynamicContent, setDynamicContent] = useState<any>(null);
-  const [promo, setPromo] = useState<PromoState | null>(null);
-  const [design, setDesign] = useState<DesignState | null>(null);
-  const [services, setServices] = useState<ServiceStateItem[]>([]);
+  const [promo, setPromo] = useState<PromoData | null>(null);
+  const [design, setDesign] = useState<DesignData | null>(null);
+  const [services, setServices] = useState<ServiceItem[]>([]);
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [portfolioSettings, setPortfolioSettings] = useState<PortfolioSettings | null>(null);
+  const [packages, setPackages] = useState<PackageItem[]>([]);
+  const [packageSettings, setPackageSettings] = useState<PackageSettings | null>(null);
+  const [navItems, setNavItems] = useState<NavItem[]>([]);
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [footerSettings, setFooterSettings] = useState<FooterSettings | null>(null);
+  const [currency, setCurrency] = useState<'NOK' | 'USD'>('NOK');
+
+  const isFetching = React.useRef(false);
 
   const loadDynamicData = useCallback(async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
     try {
       const t = Date.now();
-      const [contentRes, promoRes, designRes, servicesRes] = await Promise.all([
-        fetch(`/api/content?t=${t}`, { cache: 'no-store' }),
-        fetch(`/api/promo?t=${t}`, { cache: 'no-store' }),
-        fetch(`/api/design?t=${t}`, { cache: 'no-store' }),
-        fetch(`/api/services?t=${t}`, { cache: 'no-store' }),
+      const fetchWithTimeout = async (url: string) => {
+        try {
+          const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+          if (res.ok) return await res.json();
+        } catch (err) {
+          console.warn(`Fetch failed for ${url}:`, err);
+        }
+        return null;
+      };
+
+      const [contentData, promoData, designData, servicesData, portfolioData, packagesData] = await Promise.all([
+        fetchWithTimeout(`/api/content?t=${t}`),
+        fetchWithTimeout(`/api/promo?t=${t}`),
+        fetchWithTimeout(`/api/design?t=${t}`),
+        fetchWithTimeout(`/api/services?t=${t}`),
+        fetchWithTimeout(`/api/portfolio?t=${t}`),
+        fetchWithTimeout(`/api/packages?t=${t}`),
       ]);
 
-      if (contentRes.ok) setDynamicContent(await contentRes.json());
-      if (promoRes.ok) setPromo(await promoRes.json());
-      if (designRes.ok) {
-        const d = await designRes.json();
-        setDesign(d);
-        if (d) {
-          if (d.primaryColor) document.documentElement.style.setProperty('--teal', d.primaryColor);
-          if (d.accentColor) document.documentElement.style.setProperty('--gold', d.accentColor);
-        }
+      if (contentData) {
+        setDynamicContent(contentData);
+        if (contentData.navItems) setNavItems(contentData.navItems);
+        if (contentData.contactInfo) setContactInfo(contentData.contactInfo);
+        if (contentData.siteSettings) setSiteSettings(contentData.siteSettings);
+        if (contentData.footerSettings) setFooterSettings(contentData.footerSettings);
       }
-      if (servicesRes.ok) {
-        const svcs = await servicesRes.json();
-        if (Array.isArray(svcs)) {
-          setServices(svcs.filter((s: ServiceStateItem) => s.status === 'active'));
-        }
+      
+      if (promoData) setPromo(promoData);
+      if (designData) {
+        setDesign(designData);
+        if (designData.primaryColor) document.documentElement.style.setProperty('--teal', designData.primaryColor);
+        if (designData.accentColor) document.documentElement.style.setProperty('--gold', designData.accentColor);
       }
+      if (Array.isArray(servicesData)) {
+        setServices(servicesData.filter((s: ServiceItem) => s.status === 'active'));
+      }
+      if (Array.isArray(portfolioData)) {
+        setPortfolio(portfolioData);
+      } else if (portfolioData && Array.isArray(portfolioData.portfolio)) {
+        setPortfolio(portfolioData.portfolio);
+      }
+      if (portfolioData?.settings) setPortfolioSettings(portfolioData.settings);
+      
+      if (Array.isArray(packagesData)) {
+        setPackages(packagesData);
+      } else if (packagesData && Array.isArray(packagesData.packages)) {
+        setPackages(packagesData.packages);
+      }
+      if (packagesData?.settings) setPackageSettings(packagesData.settings);
     } catch (e) {
-      console.error('Error loading dynamic site data', e);
+      console.error('Critical error in dynamic site data loader', e);
+    } finally {
+      isFetching.current = false;
     }
   }, []);
 
   useEffect(() => {
-    const initData = async () => {
+    const init = async () => {
       await loadDynamicData();
     };
-    initData();
+    init();
 
     // Listen for custom cms-updated event
     const handleCmsEvent = () => {
@@ -134,10 +163,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('cms-updated', handleCmsEvent);
     window.addEventListener('storage', handleStorageEvent);
 
-    // Poll every 3 seconds for instant real-time sync across sessions
+    // Polling as fallback, but less frequent (10s)
     const interval = setInterval(() => {
       loadDynamicData();
-    }, 3000);
+    }, 10000);
 
     return () => {
       window.removeEventListener('cms-updated', handleCmsEvent);
@@ -193,17 +222,70 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       mergedDictionary.footer.rights =
         language === 'en' ? (dynamicContent.footer.rightsEn || baseDictionary.footer.rights) : (dynamicContent.footer.rightsNo || baseDictionary.footer.rights);
     }
+
+    if (dynamicContent.portfolio) {
+      mergedDictionary.portfolio.title =
+        language === 'en' ? (dynamicContent.portfolio.titleEn || baseDictionary.portfolio.title) : (dynamicContent.portfolio.titleNo || baseDictionary.portfolio.title);
+    }
+
+    if (dynamicContent.packages) {
+      mergedDictionary.packages.title =
+        language === 'en' ? (dynamicContent.packages.titleEn || baseDictionary.packages.title) : (dynamicContent.packages.titleNo || baseDictionary.packages.title);
+    }
   }
+
+  const formatPrice = useCallback((price: number | string) => {
+    const val = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(val)) return price.toString();
+
+    if (currency === 'USD' && siteSettings?.exchangeRate) {
+      const usdVal = val / siteSettings.exchangeRate;
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(usdVal);
+    }
+
+    return new Intl.NumberFormat('no-NO', { style: 'currency', currency: 'NOK' }).format(val);
+  }, [currency, siteSettings]);
 
   return (
     <LanguageContext.Provider
       value={{
         language,
+        setLanguage: (l: Language) => {
+          setLanguage(l);
+          localStorage.setItem('language', l);
+        },
         toggleLanguage,
         t: mergedDictionary,
         promo,
         design,
         services,
+        portfolio,
+        portfolioSettings: portfolioSettings || { titleEn: 'Our Work', titleNo: 'Vårt Arbeid', recommendedDimensions: '1200 x 800 px' },
+        packages,
+        packageSettings: packageSettings || { titleEn: 'Packages & Pricing', titleNo: 'Pakker & Priser', showYearlyToggle: true, yearlyDiscountPercentage: 17 },
+        navItems,
+        contactInfo: contactInfo || { phone: '', email: '', addressEn: '', addressNo: '' },
+        siteSettings: siteSettings || { 
+        logoUrl: '', 
+        showLanguageSwitcher: true, 
+        showCurrencySwitcher: true, 
+        showThemeSwitcher: true, 
+        defaultCurrency: 'NOK', 
+        exchangeRate: 10.5, 
+        navCtaLabelEn: 'Get Started', 
+        navCtaLabelNo: 'Kom i gang', 
+        navCtaLink: '/contact', 
+        heroCtaLabelEn: 'Start a Project', 
+        heroCtaLabelNo: 'Start et Prosjekt', 
+        heroCtaLink: '/contact',
+        bookMeetingCtaLabelEn: 'Book a Meeting',
+        bookMeetingCtaLabelNo: 'Book et Møte',
+        bookMeetingCtaLink: '/contact'
+      },
+        footerSettings: footerSettings || { aboutEn: '', aboutNo: '', copyrightEn: '', copyrightNo: '' },
+        currency,
+        setCurrency,
+        formatPrice,
         refreshDynamicData: loadDynamicData,
       }}
     >
@@ -211,6 +293,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     </LanguageContext.Provider>
   );
 }
+
 
 export function useLanguage() {
   const context = useContext(LanguageContext);

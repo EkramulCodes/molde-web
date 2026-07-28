@@ -1,6 +1,6 @@
 {
-  "name": "MoldeWeb",
-  "description": "MoldeWeb - A Norway-based agency specializing in Website Development, Digital Marketing, Facebook Ads, and Google Ads.",
+  "name": "molde-web",
+  "description": "Imported from GitHub: EkramulCodes/molde-web",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

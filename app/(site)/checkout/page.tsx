@@ -134,6 +134,7 @@ function CheckoutContent() {
           itemLabel: itemName,
           billingCycle: selectedType === 'package' ? billingCycle : undefined,
           // Package/service prices are stored in NOK; formatPrice() only converts for display.
+          subtotal: numericPrice,
           amount: totalPrice,
           currency: 'NOK',
           paymentGateway: paymentSettings.gateway || 'standard',

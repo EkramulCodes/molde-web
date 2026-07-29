@@ -51,7 +51,85 @@
     "bgPrimaryColor": "#FFFFFF",
     "textColor": "#F8FAFC",
     "fontFamily": "Inter",
-    "enableContourBg": true
+    "enableContourBg": true,
+    "themeColors": {
+      "light": {
+        "primaryColor": {
+          "value": "#173A6B",
+          "enabled": true
+        },
+        "bgDeepColor": {
+          "value": "#EAE4D6",
+          "enabled": false
+        },
+        "accentColor": {
+          "value": "#22B8F0",
+          "enabled": true
+        },
+        "cardBgColor": {
+          "value": "#EAE4D6",
+          "enabled": false
+        },
+        "hoverTextColor": {
+          "value": "#C98A2E",
+          "enabled": false
+        },
+        "hoverBgColor": {
+          "value": "#1F6F5C",
+          "enabled": false
+        },
+        "bgColor": {
+          "value": "#F3F0E8",
+          "enabled": false
+        },
+        "textColor": {
+          "value": "#16212F",
+          "enabled": false
+        },
+        "ctaButtonColor": {
+          "value": "#C98A2E",
+          "enabled": false
+        }
+      },
+      "dark": {
+        "primaryColor": {
+          "value": "#1406d0",
+          "enabled": true
+        },
+        "bgDeepColor": {
+          "value": "#182230",
+          "enabled": false
+        },
+        "accentColor": {
+          "value": "#22B8F0",
+          "enabled": true
+        },
+        "cardBgColor": {
+          "value": "#182230",
+          "enabled": false
+        },
+        "hoverTextColor": {
+          "value": "#DDA246",
+          "enabled": false
+        },
+        "hoverBgColor": {
+          "value": "#2E9280",
+          "enabled": false
+        },
+        "bgColor": {
+          "value": "#10161F",
+          "enabled": false
+        },
+        "textColor": {
+          "value": "#ECE8DE",
+          "enabled": false
+        },
+        "ctaButtonColor": {
+          "value": "#DDA246",
+          "enabled": false
+        }
+      }
+    }
   },
   "services": [
     {
@@ -374,7 +452,11 @@
     "exchangeRate": 10.5,
     "navCtaLabelEn": "Get Started",
     "navCtaLabelNo": "Kom i gang",
-    "navCtaLink": "/contact"
+    "navCtaLink": "/contact",
+    "heroImageUrl": "/uploads/1785345388729-web_design.jpg",
+    "heroCtaLink": "/service",
+    "heroCtaLabelEn": "START YOUR PROJECT",
+    "heroCtaLabelNo": "START PROSJEKTET DITT"
   },
   "footerSettings": {
     "aboutEn": "Building high-performance web applications and growth strategies from Norway.",
@@ -441,6 +523,14 @@
     }
   ],
   "media": [
+    {
+      "id": "media-1785345388732",
+      "filename": "web design.jpg",
+      "url": "/uploads/1785345388729-web_design.jpg",
+      "size": 42947,
+      "type": "image/jpeg",
+      "createdAt": "2026-07-29T17:16:28.732Z"
+    },
     {
       "id": "media-1785313829795",
       "filename": "logo-removebg-preview.jpg",
@@ -564,5 +654,27 @@
       "customUrl": "/contact",
       "enabled": true
     }
-  ]
+  ],
+  "invoiceTemplates": [
+    {
+      "id": "invtpl-default",
+      "name": "Standard Invoice",
+      "isDefault": true,
+      "companyName": "MoldeWeb",
+      "companyAddress": "Storgata 1, 6413 Molde, Norway",
+      "companyEmail": "hello@moldeweb.no",
+      "companyPhone": "+47 123 45 678",
+      "taxIdLabel": "Org.nr",
+      "taxIdValue": "",
+      "logoUrl": "",
+      "accentColor": "#14B8A6",
+      "invoiceNumberPrefix": "INV-",
+      "nextInvoiceNumber": 1001,
+      "taxLabel": "VAT / MVA (25%)",
+      "taxRate": 25,
+      "footerNote": "Thank you for your business. Payment is due within 14 days of the invoice date.",
+      "termsText": "All services are subject to MoldeWeb's standard terms of service. Questions about this invoice? Contact hello@moldeweb.no."
+    }
+  ],
+  "invoices": []
 }

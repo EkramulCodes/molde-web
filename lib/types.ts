@@ -211,6 +211,7 @@ export interface SiteSettings {
   heroCtaLabelEn: string;
   heroCtaLabelNo: string;
   heroCtaLink: string;
+  heroImageUrl: string;
   bookMeetingCtaLabelEn: string;
   bookMeetingCtaLabelNo: string;
   bookMeetingCtaLink: string;
@@ -314,6 +315,8 @@ export interface OrderItem {
   itemId: string;
   itemLabel: string;
   billingCycle?: 'monthly' | 'yearly';
+  /** Pre-tax amount. Optional for backward compatibility with orders created before invoicing existed. */
+  subtotal?: number;
   amount: number;
   currency: 'USD' | 'NOK';
   paymentGateway: string;
@@ -342,6 +345,65 @@ export interface MailProviderSettings {
   smtpPassword?: string;
   smtpSecure?: boolean;
   alerts: MailAlertToggles;
+}
+
+export interface InvoiceTemplate {
+  id: string;
+  name: string;
+  isDefault: boolean;
+  companyName: string;
+  companyAddress: string;
+  companyEmail: string;
+  companyPhone: string;
+  taxIdLabel: string;
+  taxIdValue: string;
+  logoUrl: string;
+  accentColor: string;
+  invoiceNumberPrefix: string;
+  nextInvoiceNumber: number;
+  taxLabel: string;
+  taxRate: number;
+  footerNote: string;
+  termsText: string;
+}
+
+export type InvoiceStatus = 'issued' | 'void';
+
+export interface InvoiceBrandingSnapshot {
+  companyName: string;
+  companyAddress: string;
+  companyEmail: string;
+  companyPhone: string;
+  taxIdLabel: string;
+  taxIdValue: string;
+  logoUrl: string;
+  accentColor: string;
+  footerNote: string;
+  termsText: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoiceNumber: string;
+  orderId: string;
+  templateId: string;
+  clientName: string;
+  clientEmail: string;
+  clientCompany?: string;
+  itemLabel: string;
+  itemType: OrderItemType;
+  billingCycle?: 'monthly' | 'yearly';
+  quantity: number;
+  unitPrice: number;
+  currency: 'USD' | 'NOK';
+  taxLabel: string;
+  taxRate: number;
+  taxAmount: number;
+  subtotal: number;
+  total: number;
+  issuedAt: string;
+  status: InvoiceStatus;
+  branding: InvoiceBrandingSnapshot;
 }
 
 export type CtaActionType = 'booking' | 'contact' | 'custom' | 'package';
@@ -380,4 +442,6 @@ export interface DatabaseSchema {
   orders: OrderItem[];
   mailSettings: MailProviderSettings;
   ctaButtons: CtaButtonConfig[];
+  invoiceTemplates: InvoiceTemplate[];
+  invoices: InvoiceItem[];
 }

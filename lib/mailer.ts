@@ -1,5 +1,6 @@
 import { getDb } from './store';
-import type { MailProviderSettings } from './types';
+import type { MailProviderSettings, InvoiceItem } from './types';
+import { renderInvoiceHtml } from './invoice';
 
 export type NotificationEventType = 'booking' | 'purchase' | 'contact';
 
@@ -276,6 +277,24 @@ export async function sendClientReceipt(type: NotificationEventType, toEmail: st
   const result = await dispatch(settings, { to: toEmail, subject, html });
   if (!result.ok) {
     console.warn(`[mailer] Failed to send client ${type} receipt:`, result.error);
+  }
+}
+
+/**
+ * Sends the branded invoice itself as the client's purchase confirmation
+ * email (replaces the generic sendClientReceipt('purchase', ...) call for
+ * checkout orders — the invoice already contains a full "thank you" framing
+ * plus complete line-item detail, so sending both would be redundant).
+ */
+export async function sendInvoiceEmail(toEmail: string, invoice: InvoiceItem): Promise<void> {
+  const settings = getDb().mailSettings;
+  if (!settings || settings.provider === 'none') return;
+  if (!toEmail) return;
+
+  const html = renderInvoiceHtml(invoice);
+  const result = await dispatch(settings, { to: toEmail, subject: `Invoice ${invoice.invoiceNumber} — ${invoice.branding.companyName}`, html });
+  if (!result.ok) {
+    console.warn('[mailer] Failed to send invoice email:', result.error);
   }
 }
 

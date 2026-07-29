@@ -3,6 +3,7 @@
 import { useLanguage } from '@/context/LanguageContext';
 import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiCheckCircle, FiArrowRight } from 'react-icons/fi';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Services() {
   const { t, language, services: dynamicServices } = useLanguage();
@@ -138,10 +139,13 @@ export default function Services() {
 
               <div className="flex-1 w-full bg-bg-primary/40 min-h-[220px] sm:min-h-[280px] lg:min-h-[340px] flex items-center justify-center border border-slate/10 overflow-hidden relative rounded-xl">
                 {svc.imageUrl ? (
-                  <img
+                  <Image
                     src={svc.imageUrl}
                     alt={svc.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-500 hover:scale-105"
+                    referrerPolicy="no-referrer"
                   />
                 ) : (
                   <>

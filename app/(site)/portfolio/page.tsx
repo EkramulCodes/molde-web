@@ -3,6 +3,7 @@
 import { useLanguage } from '@/context/LanguageContext';
 import { FiArrowRight, FiExternalLink, FiBriefcase } from 'react-icons/fi';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Portfolio() {
   const { portfolio, language, t } = useLanguage();
@@ -33,10 +34,13 @@ export default function Portfolio() {
             <div key={item.id} className="group space-y-6">
               <div className="aspect-[16/10] overflow-hidden rounded-2xl bg-bg-deep border border-slate/10 relative">
                 {item.imageUrl ? (
-                  <img 
-                    src={item.imageUrl} 
-                    alt={language === 'en' ? item.titleEn : item.titleNo} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  <Image
+                    src={item.imageUrl}
+                    alt={language === 'en' ? item.titleEn : item.titleNo}
+                    fill
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-teal/20">

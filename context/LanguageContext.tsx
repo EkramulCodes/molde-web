@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { en } from '../lib/dictionary/en';
 import { no } from '../lib/dictionary/no';
 import { 
@@ -58,6 +59,12 @@ export function notifyCmsUpdated() {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  // Admin pages fetch their own data per-page and don't consume any of the
+  // public-site content below — skip the fetch batch and polling entirely
+  // there instead of doing 7 unnecessary requests on every admin page.
+  const isAdminRoute = pathname?.startsWith('/admin') ?? false;
+
   const [language, setLanguage] = useState<Language>('no');
 
   useEffect(() => {
@@ -86,7 +93,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const isFetching = React.useRef(false);
 
   const loadDynamicData = useCallback(async () => {
-    if (isFetching.current) return;
+    if (isFetching.current || isAdminRoute) return;
     isFetching.current = true;
     try {
       const t = Date.now();
@@ -147,9 +154,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     } finally {
       isFetching.current = false;
     }
-  }, []);
+  }, [isAdminRoute]);
 
   useEffect(() => {
+    if (isAdminRoute) return;
+
     const init = async () => {
       await loadDynamicData();
     };
@@ -170,17 +179,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('cms-updated', handleCmsEvent);
     window.addEventListener('storage', handleStorageEvent);
 
-    // Polling as fallback, but less frequent (10s)
+    // Polling as a defensive fallback only — the event listeners above cover
+    // same-tab and cross-tab updates instantly, so this rarely needs to fire.
     const interval = setInterval(() => {
       loadDynamicData();
-    }, 10000);
+    }, 60000);
 
     return () => {
       window.removeEventListener('cms-updated', handleCmsEvent);
       window.removeEventListener('storage', handleStorageEvent);
       clearInterval(interval);
     };
-  }, [loadDynamicData]);
+  }, [loadDynamicData, isAdminRoute]);
 
   const toggleLanguage = () => {
     const newLanguage = language === 'en' ? 'no' : 'en';
@@ -282,9 +292,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         navCtaLabelEn: 'Get Started', 
         navCtaLabelNo: 'Kom i gang', 
         navCtaLink: '/contact', 
-        heroCtaLabelEn: 'Start a Project', 
-        heroCtaLabelNo: 'Start et Prosjekt', 
+        heroCtaLabelEn: 'Start a Project',
+        heroCtaLabelNo: 'Start et Prosjekt',
         heroCtaLink: '/contact',
+        heroImageUrl: '',
         bookMeetingCtaLabelEn: 'Book a Meeting',
         bookMeetingCtaLabelNo: 'Book et Møte',
         bookMeetingCtaLink: '/contact'

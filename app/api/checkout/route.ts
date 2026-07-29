@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getDb, saveDb } from '@/lib/store';
 import { requireAdminSession } from '@/lib/api-auth';
-import { sendAdminNotification, sendClientReceipt } from '@/lib/mailer';
+import { sendAdminNotification, sendInvoiceEmail } from '@/lib/mailer';
+import { saveNewInvoiceForOrder } from '@/lib/invoice';
 import { OrderItem } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, company, itemType, itemId, itemLabel, billingCycle, amount, currency, paymentGateway } = body;
+    const { name, email, company, itemType, itemId, itemLabel, billingCycle, amount, subtotal, currency, paymentGateway } = body;
 
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
       return NextResponse.json({ success: false, error: 'A valid full name is required' }, { status: 400 });
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
     if (!db.orders) db.orders = [];
 
     const numericAmount = typeof amount === 'number' ? amount : parseFloat(amount);
+    const numericSubtotal = typeof subtotal === 'number' ? subtotal : parseFloat(subtotal);
 
     const newOrder: OrderItem = {
       id: `order-${Date.now()}`,
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
       itemId: itemId || '',
       itemLabel,
       billingCycle: billingCycle === 'yearly' ? 'yearly' : billingCycle === 'monthly' ? 'monthly' : undefined,
+      subtotal: Number.isFinite(numericSubtotal) ? numericSubtotal : undefined,
       amount: Number.isFinite(numericAmount) ? numericAmount : 0,
       currency: currency === 'USD' ? 'USD' : 'NOK',
       paymentGateway: paymentGateway || 'standard',
@@ -55,8 +58,10 @@ export async function POST(request: Request) {
     db.orders.unshift(newOrder);
     saveDb(db);
 
+    const invoice = saveNewInvoiceForOrder(newOrder);
+
     const amountLabel = `${newOrder.amount.toLocaleString()} ${newOrder.currency}`;
-    const emailData = {
+    const adminEmailData = {
       name: newOrder.name,
       email: newOrder.email,
       company: newOrder.company,
@@ -67,11 +72,11 @@ export async function POST(request: Request) {
     };
 
     await Promise.all([
-      sendAdminNotification('purchase', emailData),
-      sendClientReceipt('purchase', newOrder.email, emailData),
+      sendAdminNotification('purchase', adminEmailData),
+      invoice ? sendInvoiceEmail(newOrder.email, invoice) : Promise.resolve(),
     ]).catch(() => {});
 
-    return NextResponse.json({ success: true, data: newOrder });
+    return NextResponse.json({ success: true, data: newOrder, invoice });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to submit order' }, { status: 400 });
   }

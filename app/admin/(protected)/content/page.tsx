@@ -38,6 +38,7 @@ export default function ContentManager() {
   const [uploading, setUploading] = useState(false);
   const [copiedId, setCopiedId] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [heroImageUploading, setHeroImageUploading] = useState(false);
 
   const loadContent = async () => {
     try {
@@ -316,6 +317,61 @@ export default function ContentManager() {
                   onChange={(e) => handleChange('hero', 'ctaSecondaryNo', e.target.value)}
                   className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
                 />
+              </div>
+
+              <div className="space-y-2 md:col-span-2 border-t border-slate/10 pt-4">
+                <h3 className="text-xs font-bold uppercase text-teal mb-4">Hero Image (Right Side)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-start">
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold uppercase text-slate">Image URL</label>
+                    <input
+                      type="text"
+                      value={content.siteSettings?.heroImageUrl || ''}
+                      onChange={(e) => setContent((prev: any) => ({ ...prev, siteSettings: { ...prev.siteSettings, heroImageUrl: e.target.value } }))}
+                      className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm focus:outline-none focus:border-teal"
+                      placeholder="https://... or upload a file"
+                    />
+                    <label className="inline-flex items-center gap-2 text-xs font-bold text-teal hover:text-gold cursor-pointer transition-colors">
+                      <FiUploadCloud size={14} />
+                      <span>{heroImageUploading ? 'Uploading...' : 'Upload Image'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={heroImageUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = '';
+                          if (!file) return;
+                          setHeroImageUploading(true);
+                          try {
+                            const compressed = await compressImage(file);
+                            const formData = new FormData();
+                            formData.append('file', compressed);
+                            const res = await fetch('/api/media', { method: 'POST', body: formData });
+                            const data = await res.json();
+                            if (res.ok && data?.data?.url) {
+                              setContent((prev: any) => ({ ...prev, siteSettings: { ...prev.siteSettings, heroImageUrl: data.data.url } }));
+                            } else {
+                              alert('Failed to upload hero image.');
+                            }
+                          } catch {
+                            alert('Failed to upload hero image.');
+                          } finally {
+                            setHeroImageUploading(false);
+                          }
+                        }}
+                      />
+                    </label>
+                    <p className="text-[11px] text-slate">Displayed on the right side of the homepage hero section. Leave empty to keep the current text-only layout.</p>
+                  </div>
+                  {content.siteSettings?.heroImageUrl && (
+                    <div className="w-32 h-32 rounded-xl overflow-hidden border border-slate/20 bg-bg-deep flex-shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={content.siteSettings.heroImageUrl} alt="Hero preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2 md:col-span-2 border-t border-slate/10 pt-4">

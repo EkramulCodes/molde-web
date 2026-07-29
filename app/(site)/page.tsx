@@ -3,6 +3,7 @@
 import { useLanguage } from '../../context/LanguageContext';
 import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiArrowRight, FiCheckCircle, FiBriefcase, FiPhoneCall } from 'react-icons/fi';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { CtaButton } from '../../components/CtaButton';
 
@@ -58,38 +59,60 @@ export default function Home() {
           </svg>
         </div>
 
-        <div className="max-w-3xl relative z-10 text-left space-y-6">
-          <div className="inline-flex items-center gap-2.5 px-3 py-1 bg-teal/10 border border-teal/20 text-teal rounded-full">
-            <span className="w-2 h-2 rounded-full bg-teal animate-pulse"></span>
-            <span className="text-teal text-xs font-bold uppercase tracking-[0.2em] font-mono">
-              {t.hero.tagline || 'Full-Service Digitalbyrå'}
-            </span>
+        <div
+          className={`relative z-10 w-full ${
+            siteSettings?.heroImageUrl
+              ? 'max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center'
+              : 'max-w-3xl'
+          }`}
+        >
+          <div className="text-left space-y-6">
+            <div className="inline-flex items-center gap-2.5 px-3 py-1 bg-teal/10 border border-teal/20 text-teal rounded-full">
+              <span className="w-2 h-2 rounded-full bg-teal animate-pulse"></span>
+              <span className="text-teal text-xs font-bold uppercase tracking-[0.2em] font-mono">
+                {t.hero.tagline || 'Full-Service Digitalbyrå'}
+              </span>
+            </div>
+
+            <h1 className="font-display font-bold text-4xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-ink break-words">
+              {t.hero.headline}
+            </h1>
+
+            <p className="text-base sm:text-lg md:text-xl text-slate leading-relaxed max-w-xl font-body">
+              {t.hero.subheadline}
+            </p>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <CtaButton
+                ctaKey="hero_primary_cta"
+                fallbackHref={siteSettings?.heroCtaLink || '/contact'}
+                className="delta-gold-btn px-8 py-4 font-bold uppercase tracking-widest text-xs sm:text-sm hover:scale-[1.02] shadow-xl shadow-gold/20 transition-all text-center rounded-sm min-h-[48px] flex items-center justify-center gap-2"
+              >
+                <span>{language === 'en' ? siteSettings?.heroCtaLabelEn : siteSettings?.heroCtaLabelNo}</span>
+                <FiArrowRight size={16} />
+              </CtaButton>
+              <Link
+                href="/services"
+                className="border-2 border-teal bg-teal text-white px-8 py-4 font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-teal/90 shadow-md shadow-teal/20 transition-all text-center rounded-sm min-h-[48px] flex items-center justify-center"
+              >
+                {t.hero.ctaSecondary}
+              </Link>
+            </div>
           </div>
 
-          <h1 className="font-display font-bold text-4xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-ink break-words">
-            {t.hero.headline}
-          </h1>
-
-          <p className="text-base sm:text-lg md:text-xl text-slate leading-relaxed max-w-xl font-body">
-            {t.hero.subheadline}
-          </p>
-          
-          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            <CtaButton
-              ctaKey="hero_primary_cta"
-              fallbackHref={siteSettings?.heroCtaLink || '/contact'}
-              className="delta-gold-btn px-8 py-4 font-bold uppercase tracking-widest text-xs sm:text-sm hover:scale-[1.02] shadow-xl shadow-gold/20 transition-all text-center rounded-sm min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <span>{language === 'en' ? siteSettings?.heroCtaLabelEn : siteSettings?.heroCtaLabelNo}</span>
-              <FiArrowRight size={16} />
-            </CtaButton>
-            <Link
-              href="/services"
-              className="border-2 border-teal bg-teal text-white px-8 py-4 font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-teal/90 shadow-md shadow-teal/20 transition-all text-center rounded-sm min-h-[48px] flex items-center justify-center"
-            >
-              {t.hero.ctaSecondary}
-            </Link>
-          </div>
+          {siteSettings?.heroImageUrl && (
+            <div className="relative w-full aspect-[4/3] lg:aspect-square rounded-3xl overflow-hidden border border-slate/10 shadow-2xl">
+              <Image
+                src={siteSettings.heroImageUrl}
+                alt={t.hero.headline}
+                fill
+                priority
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                className="object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          )}
         </div>
       </section>
 
@@ -125,11 +148,14 @@ export default function Home() {
                 >
                   <div>
                     {svc.imageUrl ? (
-                      <div className="w-full h-36 mb-4 rounded-lg overflow-hidden border border-slate/10 bg-bg-primary">
-                        <img 
-                          src={svc.imageUrl} 
-                          alt={svc.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      <div className="w-full h-36 mb-4 rounded-lg overflow-hidden border border-slate/10 bg-bg-primary relative">
+                        <Image
+                          src={svc.imageUrl}
+                          alt={svc.title}
+                          fill
+                          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          referrerPolicy="no-referrer"
                         />
                       </div>
                     ) : (
@@ -209,10 +235,13 @@ export default function Home() {
             {(portfolio || []).slice(0, 6).map((item) => (
               <div key={item.id} className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-bg-deep border border-slate/10">
                 {item.imageUrl ? (
-                  <img 
-                    src={item.imageUrl} 
-                    alt={language === 'en' ? item.titleEn : item.titleNo} 
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  <Image
+                    src={item.imageUrl}
+                    alt={language === 'en' ? item.titleEn : item.titleNo}
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    referrerPolicy="no-referrer"
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-teal/10">

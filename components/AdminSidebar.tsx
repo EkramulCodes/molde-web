@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { Logo } from './Logo';
+import { ThemeToggle } from './ThemeToggle';
 import { useState } from 'react';
 import { 
   FiHome, 
@@ -24,7 +25,9 @@ import {
   FiUser,
   FiDatabase,
   FiShield,
-  FiCalendar
+  FiCalendar,
+  FiDollarSign,
+  FiClipboard
 } from 'react-icons/fi';
 
 export default function AdminSidebar() {
@@ -66,6 +69,13 @@ export default function AdminSidebar() {
       ]
     },
     {
+      title: 'Billing',
+      links: [
+        { href: '/admin/invoices', label: 'Invoices', icon: FiDollarSign },
+        { href: '/admin/invoice-templates', label: 'Invoice Templates', icon: FiClipboard },
+      ]
+    },
+    {
       title: 'Configuration',
       links: [
         { href: '/admin/design', label: 'Design & Theme', icon: FiDroplet },
@@ -82,13 +92,16 @@ export default function AdminSidebar() {
           <Logo height={28} width={120} />
           <span className="text-[10px] text-teal font-mono uppercase tracking-widest font-semibold">Admin</span>
         </div>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 text-ink rounded-lg hover:bg-slate/10"
-          aria-label="Toggle Admin Sidebar"
-        >
-          {mobileOpen ? <FiX size={22} /> : <FiMenu size={22} />}
-        </button>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-2 text-ink rounded-lg hover:bg-slate/10"
+            aria-label="Toggle Admin Sidebar"
+          >
+            {mobileOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+          </button>
+        </div>
       </div>
 
       {/* Sidebar Drawer */}
@@ -101,7 +114,10 @@ export default function AdminSidebar() {
             <Logo height={32} width={130} />
             <span className="text-[10px] text-teal font-mono uppercase tracking-widest font-semibold block mt-1">Admin Panel</span>
           </div>
-          <button 
+          <div className="hidden md:flex items-center">
+            <ThemeToggle />
+          </div>
+          <button
             onClick={() => setMobileOpen(false)}
             className="md:hidden p-1 text-slate hover:text-ink"
           >

@@ -347,6 +347,7 @@ const DEFAULT_DB: DatabaseSchema = {
     heroCtaLabelEn: 'Start a Project',
     heroCtaLabelNo: 'Start et Prosjekt',
     heroCtaLink: '/contact',
+    heroImageUrl: '',
     bookMeetingCtaLabelEn: 'Book a Meeting',
     bookMeetingCtaLabelNo: 'Book et Møte',
     bookMeetingCtaLink: '/contact',
@@ -489,6 +490,28 @@ const DEFAULT_DB: DatabaseSchema = {
     { key: 'service_details_book_meeting', label: 'Service Details — Book a Meeting Button', actionType: 'booking', customUrl: '/contact', enabled: true },
     { key: 'package_card_inquiry_cta', label: 'Package Card — Book a Call', actionType: 'package', customUrl: '/contact', enabled: true },
   ],
+  invoiceTemplates: [
+    {
+      id: 'invtpl-default',
+      name: 'Standard Invoice',
+      isDefault: true,
+      companyName: 'MoldeWeb',
+      companyAddress: 'Storgata 1, 6413 Molde, Norway',
+      companyEmail: 'hello@moldeweb.no',
+      companyPhone: '+47 123 45 678',
+      taxIdLabel: 'Org.nr',
+      taxIdValue: '',
+      logoUrl: '',
+      accentColor: '#14B8A6',
+      invoiceNumberPrefix: 'INV-',
+      nextInvoiceNumber: 1001,
+      taxLabel: 'VAT / MVA (25%)',
+      taxRate: 25,
+      footerNote: 'Thank you for your business. Payment is due within 14 days of the invoice date.',
+      termsText: 'All services are subject to MoldeWeb\'s standard terms of service. Questions about this invoice? Contact hello@moldeweb.no.',
+    },
+  ],
+  invoices: [],
 };
 
 const DB_PATH = path.join(process.cwd(), 'data', 'db.json');

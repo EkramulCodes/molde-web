@@ -9,6 +9,7 @@
   --color-teal: var(--teal);
   --color-slate: var(--slate);
   --color-contour: var(--contour);
+  --color-surface-dark: var(--surface-dark);
   
   --font-display: var(--font-space-grotesk), "Space Grotesk", sans-serif;
   --font-body: var(--font-public-sans), "Public Sans", sans-serif;
@@ -43,6 +44,12 @@
   --teal: #1F6F5C;
   --slate: #626876;
   --contour: rgba(31, 111, 92, 0.08);
+
+  /* Fixed dark navy surface for decorative "always dark" bands (e.g. metrics
+     strip, callout banners) that are styled with white/light text directly.
+     Deliberately NOT theme-reactive like --ink, which flips to a light color
+     in dark mode and would otherwise make that white text unreadable. */
+  --surface-dark: #16212F;
 
   /* Admin-configurable theme tokens (Design & Theme page). Each defaults to an
      existing token so behavior is unchanged until an admin enables an override. */

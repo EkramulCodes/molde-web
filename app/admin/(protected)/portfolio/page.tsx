@@ -48,6 +48,8 @@ export default function PortfolioManager() {
       const data = await res.json();
       if (Array.isArray(data)) {
         setItems(data);
+      } else if (data && Array.isArray(data.portfolio)) {
+        setItems(data.portfolio);
       }
     } catch (e) {
       console.error('Failed to load portfolio items', e);
@@ -144,7 +146,7 @@ export default function PortfolioManager() {
       const res = await fetch('/api/portfolio', {
         method: isNew ? 'POST' : 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingItem),
+        body: JSON.stringify(isNew ? editingItem : { portfolio: editingItem }),
       });
 
       if (res.ok) {

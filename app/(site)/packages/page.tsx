@@ -120,7 +120,7 @@ export default function Packages() {
         </div>
       )}
 
-      <div className="bg-ink p-12 rounded-3xl text-center space-y-6">
+      <div className="bg-surface-dark p-12 rounded-3xl text-center space-y-6">
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight">
           {language === 'no' ? 'Trenger du noe skreddersydd?' : 'Need something custom?'}
         </h2>

@@ -333,7 +333,7 @@ export default function Home() {
 
 
       {/* Metrics Section */}
-      <section className="py-8 sm:py-12 bg-ink px-4 sm:px-6 lg:px-16 font-mono border-t border-slate/10">
+      <section className="py-8 sm:py-12 bg-surface-dark px-4 sm:px-6 lg:px-16 font-mono border-t border-slate/10">
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 text-center sm:text-left">
           <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-2 justify-center sm:justify-start p-4 bg-white/5 sm:bg-transparent rounded-lg sm:rounded-none">
             <span className="text-teal font-bold text-3xl sm:text-2xl md:text-3xl">4.2x</span>

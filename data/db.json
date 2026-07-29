@@ -201,18 +201,6 @@
       "order": 3
     },
     {
-      "id": "p4",
-      "titleEn": "Nordic Roast Coffee Rebrand",
-      "titleNo": "Nordic Roast Kaffe Rebranding",
-      "categoryEn": "Meta & Facebook Ads",
-      "categoryNo": "Meta & Facebook Annonser",
-      "imageUrl": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
-      "descriptionEn": "Dynamic Meta video ad creative campaigns generating 4.2x ROAS for subscription coffee boxes across the Nordics.",
-      "descriptionNo": "Dynamiske Meta-videoannonser som genererte 4,2x ROAS for abonnementsbasert kaffe i hele Norden.",
-      "link": "https://moldeweb.no/portfolio",
-      "order": 4
-    },
-    {
       "id": "p5",
       "titleEn": "FinTech Analytics Dashboard",
       "titleNo": "FinTech Analyse-dashbord",
@@ -222,7 +210,7 @@
       "descriptionEn": "Real-time financial management platform built for institutional wealth managers with high density data visualization.",
       "descriptionNo": "Sanntids plattform for finansiell styring bygget for institusjonelle forvaltere med datatett visualisering.",
       "link": "https://moldeweb.no/portfolio",
-      "order": 5
+      "order": 4
     },
     {
       "id": "p6",
@@ -234,7 +222,7 @@
       "descriptionEn": "Comprehensive technical SEO overhaul and multilingual content strategy resulting in top 3 search positions.",
       "descriptionNo": "Omfattende teknisk SEO-overhaling og flerspråklig innholdsstrategi som ga topp 3-plasseringer i søk.",
       "link": "https://moldeweb.no/portfolio",
-      "order": 6
+      "order": 5
     }
   ],
   "portfolioSettings": {
@@ -503,5 +491,78 @@
     "appId": "1:930998002896:web:7e8406f8849c0a86a4ead5",
     "enableEmailAuth": true,
     "enableGoogleAuth": true
-  }
+  },
+  "bookings": [],
+  "bookingSchedule": {
+    "workingDays": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "startTime": "09:00",
+    "endTime": "17:00",
+    "slotDurationMinutes": 60,
+    "blockedDates": [],
+    "blockedSlots": [],
+    "minNoticeHours": 12,
+    "timezoneLabel": "Europe/Oslo"
+  },
+  "orders": [],
+  "mailSettings": {
+    "primaryNotificationEmail": "hello@moldeweb.no",
+    "fromName": "MoldeWeb",
+    "fromEmail": "noreply@moldeweb.no",
+    "provider": "none",
+    "resendApiKey": "",
+    "sendgridApiKey": "",
+    "smtpHost": "",
+    "smtpPort": "587",
+    "smtpUser": "",
+    "smtpPassword": "",
+    "smtpSecure": false,
+    "alerts": {
+      "bookings": true,
+      "purchases": true,
+      "contactLeads": true
+    }
+  },
+  "ctaButtons": [
+    {
+      "key": "header_nav_cta",
+      "label": "Header Navigation Button",
+      "actionType": "booking",
+      "customUrl": "/contact",
+      "enabled": true
+    },
+    {
+      "key": "hero_primary_cta",
+      "label": "Homepage Hero Primary Button",
+      "actionType": "booking",
+      "customUrl": "/contact",
+      "enabled": true
+    },
+    {
+      "key": "services_book_meeting_cta",
+      "label": "\"Ready to Start?\" Band",
+      "actionType": "booking",
+      "customUrl": "/contact",
+      "enabled": true
+    },
+    {
+      "key": "service_details_book_meeting",
+      "label": "Service Details — Book a Meeting Button",
+      "actionType": "booking",
+      "customUrl": "/contact",
+      "enabled": true
+    },
+    {
+      "key": "package_card_inquiry_cta",
+      "label": "Package Card — Book a Call",
+      "actionType": "package",
+      "customUrl": "/contact",
+      "enabled": true
+    }
+  ]
 }

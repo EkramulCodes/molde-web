@@ -19,6 +19,11 @@
   --color-teal-hover: var(--hover-bg);
   --color-gold-hover: var(--hover-text);
 
+  /* Registered in @theme (not scoped to [data-theme="dark"]) so Tailwind actually
+     generates the `animate-marquee` utility; the keyframes themselves live at the
+     stylesheet root below since @keyframes cannot be nested inside a selector block. */
+  --animate-marquee: marquee 15s linear infinite;
+
   --radius-sm: 2px;
   --radius-md: 4px;
   --radius-lg: 8px;
@@ -55,13 +60,11 @@
   --teal: #2E9280;
   --slate: #8C93A2;
   --contour: rgba(46, 146, 128, 0.08);
+}
 
-  --animate-marquee: marquee 15s linear infinite;
-
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 body {

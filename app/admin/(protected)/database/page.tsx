@@ -1,20 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  FiDatabase, 
-  FiServer, 
-  FiSave, 
-  FiCheckCircle, 
-  FiRefreshCw, 
-  FiCopy, 
+import {
+  FiDatabase,
+  FiServer,
+  FiSave,
+  FiCheckCircle,
+  FiRefreshCw,
+  FiCopy,
   FiCheck,
   FiTerminal,
   FiBookOpen,
   FiLock,
   FiLayers,
   FiZap,
-  FiAlertCircle
+  FiAlertCircle,
+  FiEye,
+  FiEyeOff,
+  FiExternalLink
 } from 'react-icons/fi';
 
 interface SqlDatabaseSettings {
@@ -27,6 +30,36 @@ interface SqlDatabaseSettings {
   password?: string;
   ssl: boolean;
   connectionString?: string;
+  projectUrl?: string;
+  apiKey?: string;
+  filePath?: string;
+}
+
+// Supabase/Neon expose a project URL + API key rather than raw host/port credentials;
+// SQLite just needs a file path. This derives the best-effort connection string for
+// whichever shape of fields is relevant to the selected provider.
+function buildConnectionString(s: SqlDatabaseSettings): string {
+  switch (s.provider) {
+    case 'sqlite':
+      return s.filePath ? `sqlite:///${s.filePath}` : '';
+    case 'supabase': {
+      if (!s.projectUrl) return '';
+      const bare = s.projectUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const host = bare.startsWith('db.') ? bare : `db.${bare}`;
+      return `postgresql://postgres:${s.apiKey || ''}@${host}:${s.port || '5432'}/${s.database || 'postgres'}?sslmode=require`;
+    }
+    case 'neon': {
+      if (!s.projectUrl) return '';
+      const host = s.projectUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      return `postgresql://${s.user || 'neondb_owner'}:${s.apiKey || ''}@${host}:${s.port || '5432'}/${s.database || 'neondb'}?sslmode=require`;
+    }
+    case 'mysql':
+      return s.host ? `mysql://${s.user}:${s.password || ''}@${s.host}:${s.port || '3306'}/${s.database}` : '';
+    case 'cloudsql':
+    case 'postgresql':
+    default:
+      return s.host ? `postgresql://${s.user}:${s.password || ''}@${s.host}:${s.port || '5432'}/${s.database}${s.ssl ? '?sslmode=require' : ''}` : '';
+  }
 }
 
 export default function DatabaseIntegrationPage() {
@@ -39,7 +72,10 @@ export default function DatabaseIntegrationPage() {
     user: 'postgres',
     password: '',
     ssl: true,
-    connectionString: 'postgresql://postgres:password@localhost:5432/moldeweb_db'
+    connectionString: 'postgresql://postgres:password@localhost:5432/moldeweb_db',
+    projectUrl: '',
+    apiKey: '',
+    filePath: './data/moldeweb.sqlite',
   });
 
   const [loading, setLoading] = useState(true);
@@ -49,6 +85,17 @@ export default function DatabaseIntegrationPage() {
   const [toast, setToast] = useState('');
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedEnv, setCopiedEnv] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Recompute the connection string whenever a field it depends on changes, and
+  // drop any stale test result since it no longer reflects the current fields.
+  useEffect(() => {
+    const computed = buildConnectionString(settings);
+    setSettings((prev) => (prev.connectionString === computed ? prev : { ...prev, connectionString: computed }));
+    setTestResult(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.provider, settings.host, settings.port, settings.database, settings.user, settings.password, settings.ssl, settings.projectUrl, settings.apiKey, settings.filePath]);
 
   useEffect(() => {
     let isMounted = true;
@@ -94,18 +141,25 @@ export default function DatabaseIntegrationPage() {
     setTesting(true);
     setTestResult(null);
 
+    const target =
+      settings.provider === 'sqlite'
+        ? settings.filePath
+        : settings.provider === 'supabase' || settings.provider === 'neon'
+        ? settings.projectUrl
+        : settings.host;
+
     // Simulate connection test
     setTimeout(() => {
       setTesting(false);
-      if (settings.connectionString || settings.host) {
+      if (settings.connectionString && target) {
         setTestResult({
           success: true,
-          message: `Successfully reached ${settings.provider.toUpperCase()} target: ${settings.host || 'connection string'}`
+          message: `Successfully reached ${settings.provider.toUpperCase()} target: ${target}`
         });
       } else {
         setTestResult({
           success: false,
-          message: 'Connection failed: Host or Connection String cannot be empty.'
+          message: 'Connection failed: required connection fields cannot be empty.'
         });
       }
     }, 1200);
@@ -274,71 +328,133 @@ DB_SSL=${settings.ssl}`;
             </div>
 
             {/* Form Fields Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {settings.provider === 'sqlite' ? (
+              <div className="grid grid-cols-1 gap-4 pt-2">
+                <div className="space-y-1">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Database File Path</label>
+                  <input
+                    type="text"
+                    value={settings.filePath || ''}
+                    onChange={(e) => setSettings({ ...settings, filePath: e.target.value })}
+                    placeholder="./data/moldeweb.sqlite"
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm font-mono focus:outline-none focus:border-teal"
+                  />
+                </div>
+              </div>
+            ) : settings.provider === 'supabase' || settings.provider === 'neon' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-1 md:col-span-2">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Project URL</label>
+                  <input
+                    type="text"
+                    value={settings.projectUrl || ''}
+                    onChange={(e) => setSettings({ ...settings, projectUrl: e.target.value })}
+                    placeholder={settings.provider === 'supabase' ? 'https://xxxxxxxx.supabase.co' : 'ep-example.us-east-1.aws.neon.tech'}
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
+                  />
+                </div>
+
+                <div className="space-y-1 md:col-span-2">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Anon / API Key</label>
+                  <input
+                    type="text"
+                    value={settings.apiKey || ''}
+                    onChange={(e) => setSettings({ ...settings, apiKey: e.target.value })}
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm font-mono focus:outline-none focus:border-teal"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-1">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Host / Hostname</label>
+                  <input
+                    type="text"
+                    value={settings.host}
+                    onChange={(e) => setSettings({ ...settings, host: e.target.value })}
+                    placeholder="ep-example.us-east-1.aws.neon.tech"
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Port</label>
+                  <input
+                    type="text"
+                    value={settings.port}
+                    onChange={(e) => setSettings({ ...settings, port: e.target.value })}
+                    placeholder="5432"
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Database Name</label>
+                  <input
+                    type="text"
+                    value={settings.database}
+                    onChange={(e) => setSettings({ ...settings, database: e.target.value })}
+                    placeholder="moldeweb_db"
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Database User</label>
+                  <input
+                    type="text"
+                    value={settings.user}
+                    onChange={(e) => setSettings({ ...settings, user: e.target.value })}
+                    placeholder="postgres"
+                    className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
+                  />
+                </div>
+
+                <div className="space-y-1 md:col-span-2">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={settings.password || ''}
+                      onChange={(e) => setSettings({ ...settings, password: e.target.value })}
+                      placeholder="••••••••••••"
+                      className="w-full pl-4 pr-11 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-slate hover:text-teal rounded-lg transition-colors"
+                    >
+                      {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-1">
-                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Host / Hostname</label>
-                <input
-                  type="text"
-                  value={settings.host}
-                  onChange={(e) => setSettings({ ...settings, host: e.target.value })}
-                  placeholder="ep-example.us-east-1.aws.neon.tech"
-                  className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Port</label>
-                <input
-                  type="text"
-                  value={settings.port}
-                  onChange={(e) => setSettings({ ...settings, port: e.target.value })}
-                  placeholder="5432"
-                  className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Database Name</label>
-                <input
-                  type="text"
-                  value={settings.database}
-                  onChange={(e) => setSettings({ ...settings, database: e.target.value })}
-                  placeholder="moldeweb_db"
-                  className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Database User</label>
-                <input
-                  type="text"
-                  value={settings.user}
-                  onChange={(e) => setSettings({ ...settings, user: e.target.value })}
-                  placeholder="postgres"
-                  className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
-                />
-              </div>
-
-              <div className="space-y-1 md:col-span-2">
-                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Password</label>
-                <input
-                  type="password"
-                  value={settings.password || ''}
-                  onChange={(e) => setSettings({ ...settings, password: e.target.value })}
-                  placeholder="••••••••••••"
-                  className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm focus:outline-none focus:border-teal"
-                />
-              </div>
-
-              <div className="space-y-1 md:col-span-2">
                 <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate">Full Connection String (URL)</label>
-                <input
-                  type="text"
-                  value={settings.connectionString || ''}
-                  onChange={(e) => setSettings({ ...settings, connectionString: e.target.value })}
-                  placeholder="postgresql://user:password@host:5432/dbname?sslmode=require"
-                  className="w-full px-4 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm font-mono focus:outline-none focus:border-teal"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={settings.connectionString || ''}
+                    readOnly
+                    placeholder="postgresql://user:password@host:5432/dbname?sslmode=require"
+                    className="w-full pl-4 pr-28 py-2.5 bg-bg-deep border border-slate/20 rounded-xl text-ink text-sm font-mono focus:outline-none focus:border-teal cursor-default"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(settings.connectionString || '', setCopiedUrl)}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-bg-primary hover:bg-slate/10 text-teal font-mono text-[11px] font-bold rounded-lg border border-slate/10 flex items-center gap-1.5 shadow-sm transition-colors"
+                  >
+                    {copiedUrl ? <FiCheck className="text-emerald-400" size={13} /> : <FiCopy size={13} />}
+                    <span>{copiedUrl ? 'Copied' : 'Copy URL'}</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate/60">Auto-generated from the fields above. Edit the fields to change it.</p>
               </div>
             </div>
 
@@ -360,10 +476,28 @@ DB_SSL=${settings.ssl}`;
                 type="button"
                 onClick={handleTestConnection}
                 disabled={testing}
-                className="px-4 py-2.5 bg-slate/10 hover:bg-slate/20 text-ink font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2"
+                className={`px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 border disabled:opacity-70 ${
+                  testing
+                    ? 'bg-slate/10 border-transparent text-ink'
+                    : testResult?.success
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                    : testResult && !testResult.success
+                    ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                    : 'bg-slate/10 hover:bg-slate/20 border-transparent text-ink'
+                }`}
               >
-                {testing ? <FiRefreshCw className="animate-spin" size={14} /> : <FiZap size={14} />}
-                <span>Test Connection</span>
+                {testing ? (
+                  <FiRefreshCw className="animate-spin" size={14} />
+                ) : testResult?.success ? (
+                  <FiCheckCircle size={14} />
+                ) : testResult && !testResult.success ? (
+                  <FiAlertCircle size={14} />
+                ) : (
+                  <FiZap size={14} />
+                )}
+                <span>
+                  {testing ? 'Testing...' : testResult?.success ? 'Connected' : testResult && !testResult.success ? 'Connection Failed' : 'Test Connection'}
+                </span>
               </button>
 
               <button
@@ -401,8 +535,42 @@ DB_SSL=${settings.ssl}`;
                     Choose your preferred managed database provider:
                   </p>
                   <ul className="list-disc list-inside text-xs space-y-1 pt-1 text-slate/80 font-mono">
-                    <li><strong className="text-ink">Google Cloud SQL:</strong> Create a PostgreSQL or MySQL instance in your GCP Console.</li>
-                    <li><strong className="text-ink">Supabase / Neon:</strong> Create a free project at supabase.com or neon.tech to obtain an instant Postgres URI.</li>
+                    <li>
+                      <strong className="text-ink">Google Cloud SQL:</strong> Create a PostgreSQL or MySQL instance in your{' '}
+                      <a
+                        href="https://console.cloud.google.com/sql"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-teal font-bold hover:text-gold transition-colors inline-flex items-center gap-1"
+                      >
+                        <span>GCP Console</span>
+                        <FiExternalLink size={11} />
+                      </a>
+                      .
+                    </li>
+                    <li>
+                      <strong className="text-ink">Supabase / Neon:</strong> Create a free project at{' '}
+                      <a
+                        href="https://supabase.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-teal font-bold hover:text-gold transition-colors inline-flex items-center gap-1"
+                      >
+                        <span>supabase.com</span>
+                        <FiExternalLink size={11} />
+                      </a>{' '}
+                      or{' '}
+                      <a
+                        href="https://neon.tech"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-teal font-bold hover:text-gold transition-colors inline-flex items-center gap-1"
+                      >
+                        <span>neon.tech</span>
+                        <FiExternalLink size={11} />
+                      </a>{' '}
+                      to obtain an instant Postgres URI.
+                    </li>
                     <li><strong className="text-ink">Self-Hosted PostgreSQL:</strong> Run Docker: <code className="text-teal font-bold bg-bg-deep px-1 py-0.5 rounded">docker run --name postgres -e POSTGRES_PASSWORD=mysecret -p 5432:5432 -d postgres</code></li>
                   </ul>
                 </div>

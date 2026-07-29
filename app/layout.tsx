@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '../context/ThemeContext';
 import { LanguageProvider } from '../context/LanguageContext';
+import { ThemeColorApplier } from '../components/ThemeColorApplier';
 
 export const metadata: Metadata = {
   title: 'MoldeWeb - Web Development & Digital Marketing',
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <LanguageProvider>
+            <ThemeColorApplier />
             {children}
           </LanguageProvider>
         </ThemeProvider>

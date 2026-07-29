@@ -74,6 +74,30 @@ const DEFAULT_DB: DatabaseSchema = {
     textColor: '#F8FAFC',
     fontFamily: 'Inter',
     enableContourBg: true,
+    themeColors: {
+      light: {
+        primaryColor: { value: '#1F6F5C', enabled: false },
+        bgDeepColor: { value: '#EAE4D6', enabled: false },
+        accentColor: { value: '#C98A2E', enabled: false },
+        cardBgColor: { value: '#EAE4D6', enabled: false },
+        hoverTextColor: { value: '#C98A2E', enabled: false },
+        hoverBgColor: { value: '#1F6F5C', enabled: false },
+        bgColor: { value: '#F3F0E8', enabled: false },
+        textColor: { value: '#16212F', enabled: false },
+        ctaButtonColor: { value: '#C98A2E', enabled: false },
+      },
+      dark: {
+        primaryColor: { value: '#2E9280', enabled: false },
+        bgDeepColor: { value: '#182230', enabled: false },
+        accentColor: { value: '#DDA246', enabled: false },
+        cardBgColor: { value: '#182230', enabled: false },
+        hoverTextColor: { value: '#DDA246', enabled: false },
+        hoverBgColor: { value: '#2E9280', enabled: false },
+        bgColor: { value: '#10161F', enabled: false },
+        textColor: { value: '#ECE8DE', enabled: false },
+        ctaButtonColor: { value: '#DDA246', enabled: false },
+      },
+    },
   },
   services: [
     {

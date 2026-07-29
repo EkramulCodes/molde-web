@@ -43,6 +43,28 @@ export interface ContentData {
   };
 }
 
+export interface ColorToken {
+  value: string;
+  enabled: boolean;
+}
+
+export interface ThemeModeColors {
+  primaryColor: ColorToken;
+  bgDeepColor: ColorToken;
+  accentColor: ColorToken;
+  cardBgColor: ColorToken;
+  hoverTextColor: ColorToken;
+  hoverBgColor: ColorToken;
+  bgColor: ColorToken;
+  textColor: ColorToken;
+  ctaButtonColor: ColorToken;
+}
+
+export interface ThemeColorSettings {
+  light: ThemeModeColors;
+  dark: ThemeModeColors;
+}
+
 export interface DesignData {
   siteName: string;
   tagline: string;
@@ -54,6 +76,7 @@ export interface DesignData {
   textColor: string;
   fontFamily: string;
   enableContourBg: boolean;
+  themeColors?: ThemeColorSettings;
 }
 
 export interface ServiceItem {

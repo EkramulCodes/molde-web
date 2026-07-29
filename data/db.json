@@ -45,10 +45,10 @@
     "siteName": "MoldeWeb",
     "tagline": "Full-Service Digitalbyrå",
     "logoUrl": "",
-    "primaryColor": "#14B8A6",
-    "accentColor": "#D97706",
+    "primaryColor": "#173A6B",
+    "accentColor": "#22B8F0",
     "bgDeepColor": "#090D16",
-    "bgPrimaryColor": "#0F172A",
+    "bgPrimaryColor": "#FFFFFF",
     "textColor": "#F8FAFC",
     "fontFamily": "Inter",
     "enableContourBg": true
@@ -452,7 +452,24 @@
       "status": "read"
     }
   ],
-  "media": [],
+  "media": [
+    {
+      "id": "media-1785313829795",
+      "filename": "logo-removebg-preview.jpg",
+      "url": "/uploads/1785313829793-logo-removebg-preview.jpg",
+      "size": 12654,
+      "type": "image/jpeg",
+      "createdAt": "2026-07-29T08:30:29.795Z"
+    },
+    {
+      "id": "media-1785313805674",
+      "filename": "logo-1.jpg",
+      "url": "/uploads/1785313805670-logo-1.jpg",
+      "size": 21964,
+      "type": "image/jpeg",
+      "createdAt": "2026-07-29T08:30:05.674Z"
+    }
+  ],
   "promo": {
     "active": true,
     "messageEn": "Get a free SEO audit today!",
@@ -460,10 +477,10 @@
     "link": "/contact"
   },
   "account": {
-    "email": "admin@moldeweb.no",
-    "username": "admin",
+    "email": "admin@moldeweb.com",
+    "username": "admin2",
     "password": "admin",
-    "updatedAt": "2026-07-28T16:50:37.810Z"
+    "updatedAt": "2026-07-29T08:23:51.230Z"
   },
   "databaseSettings": {
     "enabled": false,

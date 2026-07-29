@@ -2,6 +2,7 @@
 
 This document outlines the remaining tasks and improvements needed to make the MoldeWeb digital agency website production-ready. It covers frontend, backend, security, and deployment steps.
 
+
 ## 1. Backend & Database Persistence
 Currently, the dynamic content (Promo bar data and Homepage text content) is handled via Next.js API routes (`/api/content` and `/api/promo`) but uses **in-memory variables**. This means any changes made in the Admin panel will be lost when the server restarts.
 - **Task:** Integrate a real database (e.g., PostgreSQL via Cloud SQL, or Firebase Firestore).

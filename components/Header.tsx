@@ -6,6 +6,7 @@ import { LanguageToggle } from './LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
 import { CurrencySwitcher } from './CurrencySwitcher';
 import { Logo } from './Logo';
+import { CtaButton } from './CtaButton';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { useState } from 'react';
 
@@ -50,12 +51,13 @@ export function Header() {
           {siteSettings?.showCurrencySwitcher && <CurrencySwitcher />}
           {siteSettings?.showThemeSwitcher && <ThemeToggle />}
         </div>
-        <Link 
-          href={ctaLink} 
+        <CtaButton
+          ctaKey="header_nav_cta"
+          fallbackHref={ctaLink}
           className="delta-gold-btn px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md hover:scale-[1.02] transition-all inline-block"
         >
           {ctaLabel || (language === 'en' ? 'Get Started' : 'Kom i gang')}
-        </Link>
+        </CtaButton>
       </nav>
 
       {/* Mobile Controls */}
@@ -101,13 +103,14 @@ export function Header() {
             )}
           </div>
 
-          <Link 
-            href={ctaLink} 
+          <CtaButton
+            ctaKey="header_nav_cta"
+            fallbackHref={ctaLink}
             onClick={() => setMobileMenuOpen(false)}
-            className="w-full text-center py-4 bg-gold text-white font-bold uppercase tracking-widest text-sm shadow-lg shadow-gold/20"
+            className="w-full text-center py-4 bg-gold text-white font-bold uppercase tracking-widest text-sm shadow-lg shadow-gold/20 block"
           >
             {ctaLabel || (language === 'en' ? 'Get Started' : 'Kom i gang')}
-          </Link>
+          </CtaButton>
         </div>
       )}
     </header>

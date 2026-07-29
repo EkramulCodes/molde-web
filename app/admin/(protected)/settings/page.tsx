@@ -1,29 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  FiSave, 
-  FiCheckCircle, 
-  FiRefreshCw, 
-  FiLink, 
-  FiMenu, 
-  FiSettings, 
-  FiPhone, 
-  FiMail, 
-  FiMapPin, 
-  FiPlus, 
-  FiTrash2, 
-  FiCopy, 
+import {
+  FiSave,
+  FiCheckCircle,
+  FiRefreshCw,
+  FiLink,
+  FiMenu,
+  FiSettings,
+  FiPhone,
+  FiMail,
+  FiMapPin,
+  FiPlus,
+  FiTrash2,
+  FiCopy,
   FiCheck,
   FiGlobe,
   FiDollarSign,
-  FiMoon
+  FiMoon,
+  FiSend,
+  FiAlertCircle,
+  FiToggleRight
 } from 'react-icons/fi';
 import { notifyCmsUpdated } from '@/context/LanguageContext';
-import { NavItem } from '@/lib/types';
+import { NavItem, MailProviderSettings, CtaButtonConfig } from '@/lib/types';
+import { CTA_REGISTRY } from '@/lib/cta-registry';
+import { useToast } from '@/context/ToastContext';
 
 export default function SettingsManager() {
-  const [activeTab, setActiveTab] = useState<'site' | 'navbar' | 'contact' | 'links'>('site');
+  const [activeTab, setActiveTab] = useState<'site' | 'navbar' | 'contact' | 'links' | 'mail' | 'cta'>('site');
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -145,6 +150,8 @@ export default function SettingsManager() {
           { id: 'navbar', label: 'Navigation', icon: FiMenu },
           { id: 'contact', label: 'Contact Info', icon: FiPhone },
           { id: 'links', label: 'Deep Links', icon: FiLink },
+          { id: 'mail', label: 'Mail & Notifications', icon: FiMail },
+          { id: 'cta', label: 'Button Actions', icon: FiToggleRight },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -161,6 +168,7 @@ export default function SettingsManager() {
         ))}
       </div>
 
+      {(activeTab === 'site' || activeTab === 'navbar' || activeTab === 'contact' || activeTab === 'links') && (
       <form onSubmit={handleSave} className="space-y-8">
         {/* SITE CONTROLS */}
         {activeTab === 'site' && (
@@ -480,6 +488,428 @@ export default function SettingsManager() {
           </button>
         </div>
       </form>
+      )}
+
+      {activeTab === 'mail' && <MailSettingsTab />}
+      {activeTab === 'cta' && <CtaSettingsTab />}
+    </div>
+  );
+}
+
+function MailSettingsTab() {
+  const { showToast } = useToast();
+  const [settings, setSettings] = useState<MailProviderSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [testing, setTesting] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/mail-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        setSettings(data);
+        setTestEmail(data?.primaryNotificationEmail || '');
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    if (!settings) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/mail-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      if (res.ok) {
+        showToast('Mail settings saved', 'success');
+      } else {
+        showToast('Failed to save mail settings', 'error');
+      }
+    } catch {
+      showToast('Network error while saving mail settings', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    if (!testEmail) {
+      showToast('Enter a recipient email first', 'error');
+      return;
+    }
+    setTesting(true);
+    try {
+      const res = await fetch('/api/mail-settings/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: testEmail }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        showToast(data.message || 'Test email sent', 'success');
+      } else {
+        showToast(data.error || 'Failed to send test email', 'error');
+      }
+    } catch {
+      showToast('Network error while sending test email', 'error');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  if (loading || !settings) {
+    return (
+      <div className="py-16 text-center text-slate">
+        <FiRefreshCw className="animate-spin mx-auto mb-2 text-teal" size={24} />
+        <p>Loading mail settings...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-bg-primary rounded-2xl p-8 border border-slate/10 shadow-sm space-y-8">
+      <div className="space-y-6">
+        <h3 className="font-display font-bold text-lg text-ink flex items-center gap-2">
+          <FiMail size={20} className="text-teal" />
+          Notification Recipient
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate">Primary Admin Notification Email</label>
+            <input
+              type="email"
+              value={settings.primaryNotificationEmail}
+              onChange={(e) => setSettings({ ...settings, primaryNotificationEmail: e.target.value })}
+              className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm outline-none focus:border-teal"
+              placeholder="hello@moldeweb.no"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate">&quot;From&quot; Name</label>
+            <input
+              type="text"
+              value={settings.fromName}
+              onChange={(e) => setSettings({ ...settings, fromName: e.target.value })}
+              className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm outline-none focus:border-teal"
+            />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate">&quot;From&quot; Email Address</label>
+            <input
+              type="email"
+              value={settings.fromEmail}
+              onChange={(e) => setSettings({ ...settings, fromEmail: e.target.value })}
+              className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm outline-none focus:border-teal"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4 pt-8 border-t border-slate/10">
+        <h3 className="font-display font-bold text-lg text-ink">Email Provider</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { id: 'none', label: 'Disabled', icon: '🚫' },
+            { id: 'resend', label: 'Resend', icon: '📮' },
+            { id: 'sendgrid', label: 'SendGrid', icon: '✉️' },
+            { id: 'smtp', label: 'SMTP', icon: '🔌' },
+          ].map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setSettings({ ...settings, provider: p.id as MailProviderSettings['provider'] })}
+              className={`py-3.5 px-4 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all flex flex-col items-center justify-center gap-1.5 text-center ${
+                settings.provider === p.id ? 'bg-teal/10 border-teal text-teal shadow-sm font-black' : 'border-slate/10 text-slate hover:border-slate/30 bg-bg-deep'
+              }`}
+            >
+              <span className="text-lg">{p.icon}</span>
+              <span>{p.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {settings.provider === 'resend' && (
+          <div className="space-y-2 pt-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate">Resend API Key</label>
+            <input
+              type="password"
+              value={settings.resendApiKey || ''}
+              onChange={(e) => setSettings({ ...settings, resendApiKey: e.target.value })}
+              className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm font-mono outline-none focus:border-teal"
+              placeholder="re_..."
+            />
+          </div>
+        )}
+
+        {settings.provider === 'sendgrid' && (
+          <div className="space-y-2 pt-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate">SendGrid API Key</label>
+            <input
+              type="password"
+              value={settings.sendgridApiKey || ''}
+              onChange={(e) => setSettings({ ...settings, sendgridApiKey: e.target.value })}
+              className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm font-mono outline-none focus:border-teal"
+              placeholder="SG...."
+            />
+          </div>
+        )}
+
+        {settings.provider === 'smtp' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate">SMTP Host</label>
+              <input
+                type="text"
+                value={settings.smtpHost || ''}
+                onChange={(e) => setSettings({ ...settings, smtpHost: e.target.value })}
+                className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm font-mono outline-none focus:border-teal"
+                placeholder="smtp.mailprovider.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate">SMTP Port</label>
+              <input
+                type="text"
+                value={settings.smtpPort || ''}
+                onChange={(e) => setSettings({ ...settings, smtpPort: e.target.value })}
+                className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm font-mono outline-none focus:border-teal"
+                placeholder="587"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate">SMTP Username</label>
+              <input
+                type="text"
+                value={settings.smtpUser || ''}
+                onChange={(e) => setSettings({ ...settings, smtpUser: e.target.value })}
+                className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm font-mono outline-none focus:border-teal"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate">SMTP Password</label>
+              <input
+                type="password"
+                value={settings.smtpPassword || ''}
+                onChange={(e) => setSettings({ ...settings, smtpPassword: e.target.value })}
+                className="w-full px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm font-mono outline-none focus:border-teal"
+              />
+            </div>
+            <div className="flex items-center justify-between p-4 bg-bg-deep border border-slate/10 rounded-xl md:col-span-2">
+              <div>
+                <h4 className="text-sm font-bold text-ink">Use TLS/SSL (Secure)</h4>
+                <p className="text-xs text-slate">Enable for port 465, disable for STARTTLS on port 587.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettings({ ...settings, smtpSecure: !settings.smtpSecure })}
+                className={`w-12 h-6 rounded-full p-1 transition-all ${settings.smtpSecure ? 'bg-teal' : 'bg-slate/30'}`}
+              >
+                <div className={`w-4 h-4 bg-white rounded-full transition-all ${settings.smtpSecure ? 'translate-x-6' : 'translate-x-0'}`} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4 pt-8 border-t border-slate/10">
+        <h3 className="font-display font-bold text-lg text-ink">Alert Preferences</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {([
+            { key: 'bookings', label: 'Meeting Bookings' },
+            { key: 'purchases', label: 'Package/Service Purchases' },
+            { key: 'contactLeads', label: 'Contact Form Leads' },
+          ] as const).map((alert) => (
+            <div key={alert.key} className="flex items-center justify-between p-4 bg-bg-deep border border-slate/10 rounded-xl">
+              <span className="text-sm font-bold text-ink">{alert.label}</span>
+              <button
+                type="button"
+                onClick={() => setSettings({ ...settings, alerts: { ...settings.alerts, [alert.key]: !settings.alerts[alert.key] } })}
+                className={`w-12 h-6 rounded-full p-1 transition-all flex-shrink-0 ${settings.alerts[alert.key] ? 'bg-teal' : 'bg-slate/30'}`}
+              >
+                <div className={`w-4 h-4 bg-white rounded-full transition-all ${settings.alerts[alert.key] ? 'translate-x-6' : 'translate-x-0'}`} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 pt-8 border-t border-slate/10">
+        <h3 className="font-display font-bold text-lg text-ink">Send Test Email</h3>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="email"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            className="flex-1 px-4 py-3 bg-bg-deep border border-slate/20 rounded-lg text-ink text-sm outline-none focus:border-teal"
+            placeholder="you@example.com"
+          />
+          <button
+            type="button"
+            onClick={handleTestEmail}
+            disabled={testing || settings.provider === 'none'}
+            className="px-6 py-3 bg-slate/10 hover:bg-teal/20 text-teal rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors disabled:opacity-50 flex-shrink-0"
+          >
+            {testing ? <FiRefreshCw className="animate-spin" size={16} /> : <FiSend size={16} />}
+            <span>{testing ? 'Sending...' : 'Send Test Email'}</span>
+          </button>
+        </div>
+        {settings.provider === 'none' && (
+          <p className="text-[11px] text-gold flex items-center gap-1.5">
+            <FiAlertCircle size={12} /> Select an email provider above to enable sending.
+          </p>
+        )}
+      </div>
+
+      <div className="flex justify-end pt-4 border-t border-slate/10">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="px-8 py-3 bg-teal text-white font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-teal/90 transition-colors shadow-lg shadow-teal/20 flex items-center space-x-2 disabled:opacity-50"
+        >
+          <FiSave size={18} />
+          <span>{saving ? 'Saving...' : 'Save Mail Settings'}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CtaSettingsTab() {
+  const { showToast } = useToast();
+  const [configs, setConfigs] = useState<CtaButtonConfig[]>([]);
+  const [packages, setPackages] = useState<{ id: string; nameEn: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    Promise.all([fetch('/api/cta-settings').then((res) => res.json()), fetch('/api/packages').then((res) => res.json())])
+      .then(([ctaData, pkgData]) => {
+        setConfigs(Array.isArray(ctaData) ? ctaData : []);
+        setPackages(Array.isArray(pkgData?.packages) ? pkgData.packages : []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const updateConfig = (key: string, patch: Partial<CtaButtonConfig>) => {
+    setConfigs((prev) => prev.map((c) => (c.key === key ? { ...c, ...patch } : c)));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/cta-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(configs),
+      });
+      if (res.ok) {
+        showToast('Button actions saved — live on the site immediately.', 'success');
+      } else {
+        showToast('Failed to save button actions', 'error');
+      }
+    } catch {
+      showToast('Network error while saving button actions', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="py-16 text-center text-slate">
+        <FiRefreshCw className="animate-spin mx-auto mb-2 text-teal" size={24} />
+        <p>Loading button actions...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-bg-primary rounded-2xl p-8 border border-slate/10 shadow-sm space-y-6">
+      <div>
+        <h3 className="font-display font-bold text-lg text-ink">Button & CTA Action Manager</h3>
+        <p className="text-xs text-slate mt-1">
+          Control what happens when a visitor clicks each of the site&apos;s main call-to-action buttons — no rebuild required.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {CTA_REGISTRY.map((entry) => {
+          const config: CtaButtonConfig =
+            configs.find((c) => c.key === entry.key) || { key: entry.key, label: entry.label, actionType: 'booking', enabled: true };
+          return (
+            <div key={entry.key} className="p-5 bg-bg-deep border border-slate/10 rounded-xl space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h4 className="text-sm font-bold text-ink">{entry.label}</h4>
+                  <p className="text-[11px] text-slate mt-0.5">{entry.description}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => updateConfig(entry.key, { enabled: !config.enabled })}
+                  className={`w-12 h-6 rounded-full p-1 transition-all flex-shrink-0 ${config.enabled ? 'bg-teal' : 'bg-slate/30'}`}
+                  aria-label={`Toggle ${entry.label}`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full transition-all ${config.enabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <select
+                  value={config.actionType}
+                  onChange={(e) => updateConfig(entry.key, { actionType: e.target.value as CtaButtonConfig['actionType'] })}
+                  className="w-full px-3 py-2.5 bg-bg-primary border border-slate/20 rounded-lg text-ink text-xs font-bold outline-none focus:border-teal"
+                >
+                  <option value="booking">Open Meeting Booking Form (Default)</option>
+                  <option value="contact">Open Contact Form</option>
+                  <option value="custom">Custom URL / WhatsApp Link</option>
+                  <option value="package">Open Specific Package Form</option>
+                </select>
+
+                {config.actionType === 'custom' && (
+                  <input
+                    type="text"
+                    value={config.customUrl || ''}
+                    onChange={(e) => updateConfig(entry.key, { customUrl: e.target.value })}
+                    placeholder="https://wa.me/47XXXXXXXX or /contact"
+                    className="w-full px-3 py-2.5 bg-bg-primary border border-slate/20 rounded-lg text-ink text-xs font-mono outline-none focus:border-teal"
+                  />
+                )}
+
+                {config.actionType === 'package' && (
+                  <select
+                    value={config.packageId || ''}
+                    onChange={(e) => updateConfig(entry.key, { packageId: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-bg-primary border border-slate/20 rounded-lg text-ink text-xs font-bold outline-none focus:border-teal"
+                  >
+                    <option value="">Use the package the button was clicked on (if any)</option>
+                    {packages.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nameEn}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex justify-end pt-4 border-t border-slate/10">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="px-8 py-3 bg-teal text-white font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-teal/90 transition-colors shadow-lg shadow-teal/20 flex items-center space-x-2 disabled:opacity-50"
+        >
+          <FiSave size={18} />
+          <span>{saving ? 'Saving...' : 'Save Button Actions'}</span>
+        </button>
+      </div>
     </div>
   );
 }

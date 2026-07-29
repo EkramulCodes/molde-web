@@ -1,9 +1,10 @@
 'use client';
 
 import { useLanguage } from '../../context/LanguageContext';
-import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiArrowRight, FiCheckCircle, FiBriefcase } from 'react-icons/fi';
+import { FiMonitor, FiTrendingUp, FiTarget, FiSearch, FiArrowRight, FiCheckCircle, FiBriefcase, FiPhoneCall } from 'react-icons/fi';
 import Link from 'next/link';
 import { useState } from 'react';
+import { CtaButton } from '../../components/CtaButton';
 
 export default function Home() {
   const { t, language, services: dynamicServices, portfolio, packages, packageSettings, siteSettings, formatPrice } = useLanguage();
@@ -74,15 +75,16 @@ export default function Home() {
           </p>
           
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            <Link 
-              href={siteSettings?.heroCtaLink || '/contact'} 
+            <CtaButton
+              ctaKey="hero_primary_cta"
+              fallbackHref={siteSettings?.heroCtaLink || '/contact'}
               className="delta-gold-btn px-8 py-4 font-bold uppercase tracking-widest text-xs sm:text-sm hover:scale-[1.02] shadow-xl shadow-gold/20 transition-all text-center rounded-sm min-h-[48px] flex items-center justify-center gap-2"
             >
               <span>{language === 'en' ? siteSettings?.heroCtaLabelEn : siteSettings?.heroCtaLabelNo}</span>
               <FiArrowRight size={16} />
-            </Link>
-            <Link 
-              href="/services" 
+            </CtaButton>
+            <Link
+              href="/services"
               className="border-2 border-teal bg-teal text-white px-8 py-4 font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-teal/90 shadow-md shadow-teal/20 transition-all text-center rounded-sm min-h-[48px] flex items-center justify-center"
             >
               {t.hero.ctaSecondary}
@@ -165,8 +167,9 @@ export default function Home() {
 
           {/* Book a Meeting CTA */}
           <div className="pt-8 flex justify-center">
-            <Link 
-              href={siteSettings?.bookMeetingCtaLink || '/contact'}
+            <CtaButton
+              ctaKey="services_book_meeting_cta"
+              fallbackHref={siteSettings?.bookMeetingCtaLink || '/contact'}
               className="group flex items-center gap-4 px-10 py-5 bg-teal text-white rounded-2xl shadow-2xl shadow-teal/20 hover:scale-[1.02] transition-all"
             >
               <div className="flex flex-col items-start">
@@ -178,7 +181,7 @@ export default function Home() {
               <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
                 <FiArrowRight size={20} />
               </div>
-            </Link>
+            </CtaButton>
           </div>
         </div>
       </section>
@@ -306,14 +309,22 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Link 
-                  href={`/checkout?type=package&id=${pkg.id}&cycle=${billingCycle}`} 
+                <Link
+                  href={`/checkout?type=package&id=${pkg.id}&cycle=${billingCycle}`}
                   className={`w-full py-3 text-[10px] font-bold uppercase tracking-widest text-center rounded-sm transition-all ${
                     pkg.isPopular ? 'bg-teal text-white shadow-lg shadow-teal/10 hover:bg-teal/90' : 'bg-bg-deep text-ink border border-slate/10 hover:border-teal'
                   }`}
                 >
                   {language === 'no' ? 'Velg Pakke' : 'Select Package'}
                 </Link>
+                <CtaButton
+                  ctaKey="package_card_inquiry_cta"
+                  packageContext={{ id: pkg.id, label: `${language === 'en' ? pkg.nameEn : pkg.nameNo} (${language === 'no' ? 'Pakke' : 'Package'})` }}
+                  className="w-full mt-2 py-2.5 text-[10px] font-bold uppercase tracking-widest text-center text-teal hover:text-gold transition-colors inline-flex items-center justify-center gap-1.5"
+                >
+                  <FiPhoneCall size={12} />
+                  <span>{language === 'no' ? 'Book en Samtale' : 'Book a Call'}</span>
+                </CtaButton>
               </div>
             ))}
           </div>

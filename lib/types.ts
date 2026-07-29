@@ -148,6 +148,7 @@ export interface PortfolioItem {
   categoryEn: string;
   categoryNo: string;
   imageUrl: string;
+  dimensions?: string;
   descriptionEn: string;
   descriptionNo: string;
   link?: string;
@@ -266,6 +267,94 @@ export interface FirebaseAuthSettings {
   enableGoogleAuth: boolean;
 }
 
+export type BookingContextType = 'general' | 'service' | 'package';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
+
+export interface BookingItem {
+  id: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  contextType: BookingContextType;
+  contextId?: string;
+  contextLabel?: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm (24h)
+  notes?: string;
+  status: BookingStatus;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface BlockedSlot {
+  date: string;
+  time: string;
+}
+
+export interface BookingScheduleSettings {
+  workingDays: number[]; // 0=Sunday ... 6=Saturday
+  startTime: string; // "09:00"
+  endTime: string; // "17:00"
+  slotDurationMinutes: 30 | 60;
+  blockedDates: string[];
+  blockedSlots: BlockedSlot[];
+  minNoticeHours: number;
+  timezoneLabel: string;
+}
+
+export type OrderItemType = 'package' | 'service';
+export type OrderStatus = 'pending' | 'paid' | 'cancelled';
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  email: string;
+  company?: string;
+  itemType: OrderItemType;
+  itemId: string;
+  itemLabel: string;
+  billingCycle?: 'monthly' | 'yearly';
+  amount: number;
+  currency: 'USD' | 'NOK';
+  paymentGateway: string;
+  status: OrderStatus;
+  createdAt: string;
+}
+
+export type MailProvider = 'none' | 'resend' | 'sendgrid' | 'smtp';
+
+export interface MailAlertToggles {
+  bookings: boolean;
+  purchases: boolean;
+  contactLeads: boolean;
+}
+
+export interface MailProviderSettings {
+  primaryNotificationEmail: string;
+  fromName: string;
+  fromEmail: string;
+  provider: MailProvider;
+  resendApiKey?: string;
+  sendgridApiKey?: string;
+  smtpHost?: string;
+  smtpPort?: string;
+  smtpUser?: string;
+  smtpPassword?: string;
+  smtpSecure?: boolean;
+  alerts: MailAlertToggles;
+}
+
+export type CtaActionType = 'booking' | 'contact' | 'custom' | 'package';
+
+export interface CtaButtonConfig {
+  key: string;
+  label: string;
+  actionType: CtaActionType;
+  customUrl?: string;
+  packageId?: string;
+  enabled: boolean;
+}
+
 export interface DatabaseSchema {
   content: ContentData;
   design: DesignData;
@@ -286,4 +375,9 @@ export interface DatabaseSchema {
   account?: AdminAccount;
   databaseSettings?: SqlDatabaseSettings;
   firebaseAuthSettings?: FirebaseAuthSettings;
+  bookings: BookingItem[];
+  bookingSchedule: BookingScheduleSettings;
+  orders: OrderItem[];
+  mailSettings: MailProviderSettings;
+  ctaButtons: CtaButtonConfig[];
 }

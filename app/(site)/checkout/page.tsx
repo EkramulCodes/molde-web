@@ -99,9 +99,9 @@ function CheckoutContent() {
     numericPrice = parseFloat(String(rawPrice).replace(/[^0-9.]/g, '')) || 0;
     features = language === 'en' ? selectedPackage.featuresEn : selectedPackage.featuresNo;
   } else if (selectedType === 'service' && selectedService) {
-    itemName = language === 'en' ? (selectedService.titleEn || selectedService.title) : (selectedService.titleNo || selectedService.title);
+    itemName = language === 'en' ? selectedService.titleEn : selectedService.titleNo;
     numericPrice = parseFloat(String(selectedService.price).replace(/[^0-9.]/g, '')) || 0;
-    features = (language === 'en' ? selectedService.featuresEn : selectedService.featuresNo) || selectedService.features || [];
+    features = (language === 'en' ? selectedService.featuresEn : selectedService.featuresNo) || [];
   } else {
     // Default fallback
     itemName = language === 'en' ? 'Custom Service / Package' : 'Tilpasset Tjeneste / Pakke';
@@ -121,15 +121,22 @@ function CheckoutContent() {
     setIsProcessing(true);
 
     try {
-      // Save order lead to backend
-      const res = await fetch('/api/contact', {
+      // Persist the order and trigger the admin + client email pipeline
+      const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: fullName,
           email: email,
-          service: `[PURCHASE ORDER] ${itemName} (${selectedType.toUpperCase()}) - ${formatPrice(totalPrice)}`,
-          message: `Order submitted via Checkout. Payment Gateway: ${paymentSettings.gateway || 'standard'}. Billing: ${selectedType === 'package' ? billingCycle : 'one-time'}. Company: ${company || 'N/A'}`,
+          company: company || undefined,
+          itemType: selectedType,
+          itemId: selectedId,
+          itemLabel: itemName,
+          billingCycle: selectedType === 'package' ? billingCycle : undefined,
+          // Package/service prices are stored in NOK; formatPrice() only converts for display.
+          amount: totalPrice,
+          currency: 'NOK',
+          paymentGateway: paymentSettings.gateway || 'standard',
         }),
       });
 
@@ -268,7 +275,7 @@ function CheckoutContent() {
                 ) : (
                   services.map((svc) => (
                     <option key={svc.id} value={svc.id}>
-                      {language === 'en' ? (svc.titleEn || svc.title) : (svc.titleNo || svc.title)} — {formatPrice(svc.price)}
+                      {language === 'en' ? svc.titleEn : svc.titleNo} — {formatPrice(svc.price || '0')}
                     </option>
                   ))
                 )}

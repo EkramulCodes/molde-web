@@ -17,12 +17,14 @@ import {
   PackageSettings, 
   FooterSettings 
 } from '../lib/types';
+import { CtaButtonConfig } from '../lib/types';
 
 type Dictionary = typeof en;
 
 interface LanguageContextProps {
   language: Language;
   setLanguage: (l: Language) => void;
+  toggleLanguage: () => void;
   t: Dictionary;
   promo: PromoData | null;
   design: DesignData | null;
@@ -35,6 +37,7 @@ interface LanguageContextProps {
   contactInfo: ContactInfo;
   siteSettings: SiteSettings;
   footerSettings: FooterSettings;
+  ctaButtons: CtaButtonConfig[];
   currency: 'NOK' | 'USD';
   setCurrency: (c: 'NOK' | 'USD') => void;
   formatPrice: (price: number | string) => string;
@@ -77,6 +80,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [footerSettings, setFooterSettings] = useState<FooterSettings | null>(null);
+  const [ctaButtons, setCtaButtons] = useState<CtaButtonConfig[]>([]);
   const [currency, setCurrency] = useState<'NOK' | 'USD'>('NOK');
 
   const isFetching = React.useRef(false);
@@ -96,13 +100,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         return null;
       };
 
-      const [contentData, promoData, designData, servicesData, portfolioData, packagesData] = await Promise.all([
+      const [contentData, promoData, designData, servicesData, portfolioData, packagesData, ctaData] = await Promise.all([
         fetchWithTimeout(`/api/content?t=${t}`),
         fetchWithTimeout(`/api/promo?t=${t}`),
         fetchWithTimeout(`/api/design?t=${t}`),
         fetchWithTimeout(`/api/services?t=${t}`),
         fetchWithTimeout(`/api/portfolio?t=${t}`),
         fetchWithTimeout(`/api/packages?t=${t}`),
+        fetchWithTimeout(`/api/cta-settings?t=${t}`),
       ]);
 
       if (contentData) {
@@ -135,6 +140,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setPackages(packagesData.packages);
       }
       if (packagesData?.settings) setPackageSettings(packagesData.settings);
+
+      if (Array.isArray(ctaData)) setCtaButtons(ctaData);
     } catch (e) {
       console.error('Critical error in dynamic site data loader', e);
     } finally {
@@ -283,6 +290,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         bookMeetingCtaLink: '/contact'
       },
         footerSettings: footerSettings || { aboutEn: '', aboutNo: '', copyrightEn: '', copyrightNo: '' },
+        ctaButtons,
         currency,
         setCurrency,
         formatPrice,

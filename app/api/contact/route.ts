@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getDb, saveDb, LeadItem } from '@/lib/store';
+import { requireAdminSession } from '@/lib/api-auth';
+import { sendAdminNotification, sendClientReceipt } from '@/lib/mailer';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const db = getDb();
@@ -36,6 +40,12 @@ export async function POST(request: Request) {
     db.leads.unshift(newLead);
     saveDb(db);
 
+    const emailData = { name: newLead.name, email: newLead.email, service: newLead.service, message: newLead.message };
+    await Promise.all([
+      sendAdminNotification('contact', emailData),
+      sendClientReceipt('contact', newLead.email, emailData),
+    ]).catch(() => {});
+
     return NextResponse.json({ success: true, data: newLead });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to submit contact request' }, { status: 400 });
@@ -43,6 +53,9 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const unauthorized = await requireAdminSession();
+  if (unauthorized) return unauthorized;
+
   try {
     const body = await request.json();
     const { id, status } = body;
@@ -65,6 +78,9 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const unauthorized = await requireAdminSession();
+  if (unauthorized) return unauthorized;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

@@ -1,9 +1,23 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { decode } from "next-auth/jwt";
-import { getDb } from "./store";
+import bcrypt from "bcryptjs";
+import { getDb, DEFAULT_ADMIN_PASSWORD_HASH } from "./store";
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || "moldeweb-norway-fixed-secret-key-2026-v1";
+
+// bcrypt hashes always start with $2a$/$2b$/$2y$. Older/manually-edited db.json
+// files may still have a plaintext password from before hashing was introduced —
+// support both so an existing install isn't locked out, but never re-introduce a
+// hardcoded credential bypass: this only ever compares against what's actually
+// stored in db.account, nothing else.
+async function verifyPassword(inputPassword: string, storedPassword: string): Promise<boolean> {
+  const looksHashed = /^\$2[aby]\$/.test(storedPassword);
+  if (looksHashed) {
+    return bcrypt.compare(inputPassword, storedPassword);
+  }
+  return inputPassword === storedPassword;
+}
 
 export const authOptions: NextAuthOptions = {
   secret: NEXTAUTH_SECRET,
@@ -18,20 +32,17 @@ export const authOptions: NextAuthOptions = {
         const db = getDb();
         const storedEmail = db.account?.email || "admin@moldeweb.no";
         const storedUsername = db.account?.username || "admin";
-        const storedPassword = db.account?.password || "admin";
+        const storedPassword = db.account?.password || DEFAULT_ADMIN_PASSWORD_HASH;
 
         const inputUser = credentials?.email?.trim();
         const inputPass = credentials?.password?.trim();
 
-        const isUserMatch = 
-          inputUser === storedEmail || 
-          inputUser === storedUsername || 
-          inputUser === "admin@moldeweb.no" || 
-          inputUser === "admin";
+        if (!inputUser || !inputPass) {
+          return null;
+        }
 
-        const isPassMatch = 
-          inputPass === storedPassword || 
-          inputPass === "admin";
+        const isUserMatch = inputUser === storedEmail || inputUser === storedUsername;
+        const isPassMatch = await verifyPassword(inputPass, storedPassword);
 
         if (isUserMatch && isPassMatch) {
           return { id: "1", name: storedUsername || "Admin", email: storedEmail || "admin@moldeweb.no" };

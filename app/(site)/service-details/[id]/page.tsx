@@ -5,6 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { FiArrowLeft, FiCheck, FiArrowRight } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
+import { CtaButton } from '@/components/CtaButton';
 
 export default function ServiceDetails() {
   const { id } = useParams();
@@ -82,12 +83,14 @@ export default function ServiceDetails() {
                 {language === 'en' ? (service.purchaseLabelEn || 'Purchase Service') : (service.purchaseLabelNo || 'Kjøp tjeneste')}
                 <FiArrowRight size={16} />
               </Link>
-              <Link 
-                href="/contact"
+              <CtaButton
+                ctaKey="service_details_book_meeting"
+                fallbackHref="/contact"
+                serviceContext={{ id: service.id, label: `${title} (${language === 'no' ? 'Tjeneste' : 'Service'})` }}
                 className="flex-1 border-2 border-teal text-teal px-8 py-4 font-bold uppercase tracking-widest text-xs sm:text-sm text-center hover:bg-teal hover:text-white transition-all rounded-sm flex items-center justify-center"
               >
                 {language === 'en' ? 'Book a Meeting' : 'Book et møte'}
-              </Link>
+              </CtaButton>
             </div>
           </div>
         </div>

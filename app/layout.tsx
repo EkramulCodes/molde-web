@@ -3,6 +3,9 @@ import './globals.css';
 import { ThemeProvider } from '../context/ThemeContext';
 import { LanguageProvider } from '../context/LanguageContext';
 import { ThemeColorApplier } from '../components/ThemeColorApplier';
+import { ToastProvider } from '../context/ToastContext';
+import { BookingModalProvider } from '../context/BookingModalContext';
+import { BookingModal } from '../components/booking/BookingModal';
 
 export const metadata: Metadata = {
   title: 'MoldeWeb - Web Development & Digital Marketing',
@@ -15,8 +18,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <LanguageProvider>
-            <ThemeColorApplier />
-            {children}
+            <ToastProvider>
+              <BookingModalProvider>
+                <ThemeColorApplier />
+                {children}
+                <BookingModal />
+              </BookingModalProvider>
+            </ToastProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

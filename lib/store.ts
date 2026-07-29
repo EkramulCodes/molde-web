@@ -1,16 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { 
-  DatabaseSchema, 
-  ContentData, 
-  DesignData, 
-  ServiceItem, 
-  SeoItem, 
-  LeadItem, 
-  MediaItem, 
-  PromoData, 
-  PortfolioItem, 
-  PackageItem, 
+import {
+  DatabaseSchema,
+  ContentData,
+  DesignData,
+  ServiceItem,
+  SeoItem,
+  LeadItem,
+  MediaItem,
+  PromoData,
+  PortfolioItem,
+  PackageItem,
   PaymentSettings,
   NavItem,
   ContactInfo,
@@ -19,6 +19,21 @@ import {
   PackageSettings,
   FooterSettings
 } from './types';
+
+// Re-exported so existing API routes can keep importing item types directly
+// from '@/lib/store' alongside getDb/saveDb.
+export type {
+  ServiceItem,
+  SeoItem,
+  LeadItem,
+  MediaItem,
+  PortfolioItem,
+  PackageItem,
+} from './types';
+
+// bcrypt hash of the first-run default password 'admin' (cost factor 10).
+// Change this account's password via /admin/account immediately after first login.
+export const DEFAULT_ADMIN_PASSWORD_HASH = '$2b$10$sj/Pk4.vPl7vsVJXchteDejAwktmpFlfkSFFVpk0Q7u12eQVKrnPm';
 
 const DEFAULT_DB: DatabaseSchema = {
   content: {
@@ -329,6 +344,12 @@ const DEFAULT_DB: DatabaseSchema = {
     navCtaLabelEn: 'Get Started',
     navCtaLabelNo: 'Kom i gang',
     navCtaLink: '/contact',
+    heroCtaLabelEn: 'Start a Project',
+    heroCtaLabelNo: 'Start et Prosjekt',
+    heroCtaLink: '/contact',
+    bookMeetingCtaLabelEn: 'Book a Meeting',
+    bookMeetingCtaLabelNo: 'Book et Møte',
+    bookMeetingCtaLink: '/contact',
   },
   footerSettings: {
     aboutEn: 'Building high-performance web applications and growth strategies from Norway.',
@@ -399,12 +420,14 @@ const DEFAULT_DB: DatabaseSchema = {
     active: true,
     messageEn: 'Get a free SEO audit today!',
     messageNo: 'Få en gratis SEO-analyse i dag!',
-    link: '/contact'
+    link: '/contact',
+    slidingEnabled: false,
+    dismissible: true
   },
   account: {
     email: 'admin@moldeweb.no',
     username: 'admin',
-    password: 'admin',
+    password: DEFAULT_ADMIN_PASSWORD_HASH,
     updatedAt: new Date().toISOString()
   },
   databaseSettings: {
@@ -428,7 +451,44 @@ const DEFAULT_DB: DatabaseSchema = {
     appId: '1:930998002896:web:7e8406f8849c0a86a4ead5',
     enableEmailAuth: true,
     enableGoogleAuth: true
-  }
+  },
+  bookings: [],
+  bookingSchedule: {
+    workingDays: [1, 2, 3, 4, 5],
+    startTime: '09:00',
+    endTime: '17:00',
+    slotDurationMinutes: 60,
+    blockedDates: [],
+    blockedSlots: [],
+    minNoticeHours: 12,
+    timezoneLabel: 'Europe/Oslo',
+  },
+  orders: [],
+  mailSettings: {
+    primaryNotificationEmail: 'hello@moldeweb.no',
+    fromName: 'MoldeWeb',
+    fromEmail: 'noreply@moldeweb.no',
+    provider: 'none',
+    resendApiKey: '',
+    sendgridApiKey: '',
+    smtpHost: '',
+    smtpPort: '587',
+    smtpUser: '',
+    smtpPassword: '',
+    smtpSecure: false,
+    alerts: {
+      bookings: true,
+      purchases: true,
+      contactLeads: true,
+    },
+  },
+  ctaButtons: [
+    { key: 'header_nav_cta', label: 'Header Navigation Button', actionType: 'booking', customUrl: '/contact', enabled: true },
+    { key: 'hero_primary_cta', label: 'Homepage Hero Primary Button', actionType: 'booking', customUrl: '/contact', enabled: true },
+    { key: 'services_book_meeting_cta', label: '"Ready to Start?" Band', actionType: 'booking', customUrl: '/contact', enabled: true },
+    { key: 'service_details_book_meeting', label: 'Service Details — Book a Meeting Button', actionType: 'booking', customUrl: '/contact', enabled: true },
+    { key: 'package_card_inquiry_cta', label: 'Package Card — Book a Call', actionType: 'package', customUrl: '/contact', enabled: true },
+  ],
 };
 
 const DB_PATH = path.join(process.cwd(), 'data', 'db.json');

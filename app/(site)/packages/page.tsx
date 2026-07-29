@@ -1,9 +1,10 @@
 'use client';
 
 import { useLanguage } from '@/context/LanguageContext';
-import { FiCheckCircle, FiArrowRight, FiPackage } from 'react-icons/fi';
+import { FiCheckCircle, FiArrowRight, FiPackage, FiPhoneCall } from 'react-icons/fi';
 import Link from 'next/link';
 import { useState } from 'react';
+import { CtaButton } from '@/components/CtaButton';
 
 export default function Packages() {
   const { packages, language, t, formatPrice, packageSettings } = useLanguage();
@@ -95,17 +96,25 @@ export default function Packages() {
                 ))}
               </ul>
 
-              <Link 
-                href={`/checkout?type=package&id=${pkg.id}&cycle=${billingCycle}`} 
+              <Link
+                href={`/checkout?type=package&id=${pkg.id}&cycle=${billingCycle}`}
                 className={`w-full py-4 font-bold uppercase tracking-widest text-xs rounded-sm transition-all flex items-center justify-center gap-2 ${
-                  pkg.isPopular 
-                    ? 'bg-teal text-white shadow-lg shadow-teal/20 hover:bg-teal/90' 
+                  pkg.isPopular
+                    ? 'bg-teal text-white shadow-lg shadow-teal/20 hover:bg-teal/90'
                     : 'bg-bg-deep text-ink border border-slate/10 hover:border-teal hover:text-teal'
                 }`}
               >
                 <span>{language === 'no' ? 'Velg Pakke' : 'Get Started'}</span>
                 <FiArrowRight size={14} />
               </Link>
+              <CtaButton
+                ctaKey="package_card_inquiry_cta"
+                packageContext={{ id: pkg.id, label: `${language === 'en' ? pkg.nameEn : pkg.nameNo} (${language === 'no' ? 'Pakke' : 'Package'})` }}
+                className="w-full mt-3 py-2.5 font-bold uppercase tracking-widest text-[11px] text-center text-teal hover:text-gold transition-colors inline-flex items-center justify-center gap-1.5"
+              >
+                <FiPhoneCall size={13} />
+                <span>{language === 'no' ? 'Book en Samtale' : 'Book a Call'}</span>
+              </CtaButton>
             </div>
           ))}
         </div>

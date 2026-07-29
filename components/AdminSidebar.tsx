@@ -23,7 +23,8 @@ import {
   FiCreditCard,
   FiUser,
   FiDatabase,
-  FiShield
+  FiShield,
+  FiCalendar
 } from 'react-icons/fi';
 
 export default function AdminSidebar() {
@@ -36,6 +37,7 @@ export default function AdminSidebar() {
       links: [
         { href: '/admin', label: 'Overview', icon: FiHome },
         { href: '/admin/leads', label: 'Leads & Form', icon: FiInbox },
+        { href: '/admin/bookings', label: 'Bookings & Schedule', icon: FiCalendar },
         { href: '/admin/account', label: 'Account', icon: FiUser },
       ]
     },

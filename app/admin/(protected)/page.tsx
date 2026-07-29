@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  FiLayers, 
-  FiInbox, 
-  FiImage, 
-  FiCheckCircle, 
-  FiArrowRight, 
-  FiPlus, 
-  FiEdit, 
+import {
+  FiLayers,
+  FiInbox,
+  FiImage,
+  FiCheckCircle,
+  FiArrowRight,
+  FiPlus,
+  FiEdit,
   FiGlobe,
-  FiClock
+  FiClock,
+  FiCalendar
 } from 'react-icons/fi';
 
 export default function AdminOverview() {
@@ -20,6 +21,8 @@ export default function AdminOverview() {
     totalLeads: 0,
     newLeads: 0,
     mediaCount: 0,
+    totalBookings: 0,
+    pendingBookings: 0,
   });
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,25 +30,30 @@ export default function AdminOverview() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [servicesRes, leadsRes, mediaRes] = await Promise.all([
+        const [servicesRes, leadsRes, mediaRes, bookingsRes] = await Promise.all([
           fetch('/api/services'),
           fetch('/api/contact'),
-          fetch('/api/media')
+          fetch('/api/media'),
+          fetch('/api/bookings')
         ]);
 
         const services = await servicesRes.json();
         const leads = await leadsRes.json();
         const media = await mediaRes.json();
+        const bookings = bookingsRes.ok ? await bookingsRes.json() : [];
 
         const activeCount = Array.isArray(services) ? services.filter(s => s.status === 'active').length : 0;
         const leadsList = Array.isArray(leads) ? leads : [];
         const newCount = leadsList.filter(l => l.status === 'new').length;
+        const bookingsList = Array.isArray(bookings) ? bookings : [];
 
         setStats({
           activeServices: activeCount,
           totalLeads: leadsList.length,
           newLeads: newCount,
           mediaCount: Array.isArray(media) ? media.length : 0,
+          totalBookings: bookingsList.length,
+          pendingBookings: bookingsList.filter((b: any) => b.status === 'pending').length,
         });
 
         setRecentLeads(leadsList.slice(0, 5));
@@ -103,6 +111,27 @@ export default function AdminOverview() {
 
         <div className="bg-bg-primary rounded-2xl p-6 border border-slate/10 shadow-sm relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
+            <span className="text-slate text-xs font-bold uppercase tracking-wider">Total Bookings</span>
+            <div className="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center">
+              <FiCalendar size={20} />
+            </div>
+          </div>
+          <p className="font-display text-3xl font-bold text-ink">{loading ? '...' : stats.totalBookings}</p>
+          <div className="mt-4 flex items-center text-xs text-indigo-400 font-medium">
+            {stats.pendingBookings > 0 ? (
+              <Link href="/admin/bookings" className="bg-indigo-500/10 px-2 py-0.5 rounded font-bold hover:underline">
+                {stats.pendingBookings} Pending Requests
+              </Link>
+            ) : (
+              <Link href="/admin/bookings" className="text-slate hover:underline">
+                Manage Bookings
+              </Link>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-bg-primary rounded-2xl p-6 border border-slate/10 shadow-sm relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
             <span className="text-slate text-xs font-bold uppercase tracking-wider">Site Status</span>
             <div className="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center">
               <FiCheckCircle size={20} />
@@ -121,7 +150,7 @@ export default function AdminOverview() {
       {/* Quick Action Bar */}
       <div className="bg-bg-primary rounded-2xl p-6 border border-slate/10 shadow-sm">
         <h2 className="font-display text-lg font-bold text-ink mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Link href="/admin/content" className="p-4 bg-bg-deep hover:bg-teal/10 border border-slate/10 hover:border-teal/30 rounded-xl transition-all group flex flex-col justify-between">
             <FiEdit className="text-teal group-hover:scale-110 transition-transform mb-2" size={22} />
             <span className="text-sm font-semibold text-ink">Edit Website Text</span>
@@ -144,6 +173,12 @@ export default function AdminOverview() {
             <FiInbox className="text-amber-500 group-hover:scale-110 transition-transform mb-2" size={22} />
             <span className="text-sm font-semibold text-ink">View Customer Leads</span>
             <span className="text-xs text-slate mt-1">{stats.newLeads} unread inquiries</span>
+          </Link>
+
+          <Link href="/admin/bookings" className="p-4 bg-bg-deep hover:bg-teal/10 border border-slate/10 hover:border-teal/30 rounded-xl transition-all group flex flex-col justify-between">
+            <FiCalendar className="text-indigo-400 group-hover:scale-110 transition-transform mb-2" size={22} />
+            <span className="text-sm font-semibold text-ink">Bookings & Schedule</span>
+            <span className="text-xs text-slate mt-1">{stats.pendingBookings} pending requests</span>
           </Link>
         </div>
       </div>

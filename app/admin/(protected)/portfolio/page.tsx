@@ -64,8 +64,9 @@ export default function PortfolioManager() {
   }, []);
 
   const handleImageUpload = async (rawFile: File) => {
+    let localUrl = '';
     try {
-      const localUrl = URL.createObjectURL(rawFile);
+      localUrl = URL.createObjectURL(rawFile);
       setImagePreview(localUrl);
     } catch (err) {
       console.warn(err);

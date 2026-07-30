@@ -28,15 +28,15 @@ export function BookingModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeBookingModal();
       }}
     >
-      <div className="bg-bg-primary border border-slate/20 sm:rounded-2xl max-w-xl w-full min-h-screen sm:min-h-0 p-6 sm:p-8 space-y-6 shadow-2xl animate-fade-in my-0 sm:my-8">
-        <div className="flex justify-between items-start border-b border-slate/10 pb-4">
+      <div className="bg-bg-primary border border-slate/20 sm:rounded-2xl w-full max-w-xl h-full sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
+        <div className="flex justify-between items-start border-b border-slate/10 px-6 sm:px-8 py-5 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-teal/10 flex items-center justify-center text-teal">
+            <div className="w-10 h-10 rounded-full bg-teal/10 flex items-center justify-center text-teal flex-shrink-0">
               <FiCalendar size={18} />
             </div>
             <div>
@@ -51,7 +51,9 @@ export function BookingModal() {
           </button>
         </div>
 
-        <BookingForm target={target} onClose={closeBookingModal} />
+        <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6">
+          <BookingForm target={target} onClose={closeBookingModal} />
+        </div>
       </div>
     </div>
   );

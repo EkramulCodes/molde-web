@@ -236,7 +236,7 @@ function RequestsTab() {
 
       {activeBooking && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-bg-primary border border-slate/20 rounded-2xl max-w-lg w-full p-8 space-y-6 shadow-2xl animate-fade-in">
+          <div className="bg-bg-primary border border-slate/20 rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-8 space-y-6 shadow-2xl animate-fade-in">
             <div className="flex justify-between items-start border-b border-slate/10 pb-4">
               <div>
                 <h2 className="font-display text-xl font-bold text-ink">{activeBooking.name}</h2>

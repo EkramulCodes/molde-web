@@ -249,7 +249,7 @@ export default function InvoiceTemplatesManager() {
 
       {isModalOpen && editing && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-bg-primary border border-slate/20 rounded-2xl max-w-2xl w-full my-8 p-8 space-y-6 shadow-2xl animate-fade-in">
+          <div className="bg-bg-primary border border-slate/20 rounded-2xl max-w-2xl w-full my-8 max-h-[85vh] overflow-y-auto p-8 space-y-6 shadow-2xl animate-fade-in">
             <div className="flex justify-between items-start border-b border-slate/10 pb-4">
               <h2 className="font-display text-xl font-bold text-ink">{editing.id ? 'Edit Invoice Template' : 'New Invoice Template'}</h2>
               <button onClick={() => { setIsModalOpen(false); setEditing(null); }} className="text-slate hover:text-ink p-1 rounded-lg">

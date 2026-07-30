@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getDb, saveDb } from '@/lib/store';
 import { requireAdminSession } from '@/lib/api-auth';
 import { sendAdminNotification, sendInvoiceEmail } from '@/lib/mailer';
-import { saveNewInvoiceForOrder } from '@/lib/invoice';
+import { saveNewInvoiceForOrder, recordInvoiceEmailResult } from '@/lib/invoice';
 import { OrderItem } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -71,10 +71,19 @@ export async function POST(request: Request) {
       paymentGateway: newOrder.paymentGateway,
     };
 
-    await Promise.all([
-      sendAdminNotification('purchase', adminEmailData),
-      invoice ? sendInvoiceEmail(newOrder.email, invoice) : Promise.resolve(),
-    ]).catch(() => {});
+    try {
+      const [, invoiceEmailResult] = await Promise.all([
+        sendAdminNotification('purchase', adminEmailData),
+        invoice ? sendInvoiceEmail(newOrder.email, invoice) : Promise.resolve(null),
+      ]);
+      if (invoice && invoiceEmailResult) {
+        recordInvoiceEmailResult(invoice.id, invoiceEmailResult);
+      }
+    } catch {
+      // sendAdminNotification/sendInvoiceEmail already catch their own errors
+      // internally; this is just an extra safety net so a mail failure never
+      // fails the checkout response.
+    }
 
     return NextResponse.json({ success: true, data: newOrder, invoice });
   } catch (error) {

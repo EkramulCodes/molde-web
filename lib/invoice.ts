@@ -70,13 +70,19 @@ export function buildInvoiceForOrder(order: OrderItem, db: ReturnType<typeof get
       footerNote: template.footerNote,
       termsText: template.termsText,
     },
+    emailStatus: 'not_configured',
   };
 
   return invoice;
 }
 
+interface RenderInvoiceOptions {
+  /** Auto-opens the browser print dialog on load — used for the admin "Download PDF" view, not for the emailed copy. */
+  autoPrint?: boolean;
+}
+
 /** Renders a full, self-contained, printable/emailable HTML invoice document. */
-export function renderInvoiceHtml(invoice: InvoiceItem): string {
+export function renderInvoiceHtml(invoice: InvoiceItem, options: RenderInvoiceOptions = {}): string {
   const b = invoice.branding;
   const accent = b.accentColor || '#14B8A6';
   const issuedDate = new Date(invoice.issuedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
@@ -169,6 +175,14 @@ export function renderInvoiceHtml(invoice: InvoiceItem): string {
       ${b.termsText ? `<br/><br/>${escapeHtml(b.termsText)}` : ''}
     </div>
   </div>
+  ${options.autoPrint ? `
+  <button id="download-pdf-btn" onclick="window.print()" style="position:fixed;top:16px;right:16px;padding:10px 18px;background:${accent};color:#fff;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.15);">Download PDF</button>
+  <style>@media print { #download-pdf-btn { display:none; } }</style>
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () { window.print(); }, 300);
+    });
+  </script>` : ''}
 </body>
 </html>`;
 }
@@ -183,4 +197,23 @@ export function saveNewInvoiceForOrder(order: OrderItem): InvoiceItem | null {
   saveDb(db);
 
   return invoice;
+}
+
+/** Persists the outcome of an invoice email delivery attempt (initial send or manual resend). */
+export function recordInvoiceEmailResult(invoiceId: string, result: { ok: boolean; error?: string }): InvoiceItem | null {
+  const db = getDb();
+  if (!db.invoices) db.invoices = [];
+
+  const index = db.invoices.findIndex((inv) => inv.id === invoiceId);
+  if (index === -1) return null;
+
+  db.invoices[index] = {
+    ...db.invoices[index],
+    emailStatus: result.ok ? 'sent' : result.error?.includes('No email provider') ? 'not_configured' : 'failed',
+    emailError: result.ok ? undefined : result.error,
+    emailSentAt: result.ok ? new Date().toISOString() : db.invoices[index].emailSentAt,
+  };
+  saveDb(db);
+
+  return db.invoices[index];
 }

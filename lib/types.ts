@@ -404,6 +404,9 @@ export interface InvoiceItem {
   issuedAt: string;
   status: InvoiceStatus;
   branding: InvoiceBrandingSnapshot;
+  emailStatus: 'sent' | 'failed' | 'not_configured';
+  emailError?: string;
+  emailSentAt?: string;
 }
 
 export type CtaActionType = 'booking' | 'contact' | 'custom' | 'package';

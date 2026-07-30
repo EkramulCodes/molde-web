@@ -524,6 +524,14 @@
   ],
   "media": [
     {
+      "id": "media-1785401033486",
+      "filename": "logo.png",
+      "url": "/uploads/1785401033484-logo.png",
+      "size": 120186,
+      "type": "image/png",
+      "createdAt": "2026-07-30T08:43:53.486Z"
+    },
+    {
       "id": "media-1785345388732",
       "filename": "web design.jpg",
       "url": "/uploads/1785345388729-web_design.jpg",
@@ -599,7 +607,23 @@
     "minNoticeHours": 12,
     "timezoneLabel": "Europe/Oslo"
   },
-  "orders": [],
+  "orders": [
+    {
+      "id": "order-1785400897092",
+      "name": "Ekramul Islam",
+      "email": "mdai05552@gmail.com",
+      "company": "Glamify",
+      "itemType": "service",
+      "itemId": "web",
+      "itemLabel": "Website Development",
+      "subtotal": 2500,
+      "amount": 3125,
+      "currency": "NOK",
+      "paymentGateway": "none",
+      "status": "pending",
+      "createdAt": "2026-07-30T08:41:37.092Z"
+    }
+  ],
   "mailSettings": {
     "primaryNotificationEmail": "hello@moldeweb.no",
     "fromName": "MoldeWeb",
@@ -666,15 +690,51 @@
       "companyPhone": "+47 123 45 678",
       "taxIdLabel": "Org.nr",
       "taxIdValue": "",
-      "logoUrl": "",
+      "logoUrl": "/uploads/1785401033484-logo.png",
       "accentColor": "#14B8A6",
       "invoiceNumberPrefix": "INV-",
-      "nextInvoiceNumber": 1001,
+      "nextInvoiceNumber": 1002,
       "taxLabel": "VAT / MVA (25%)",
       "taxRate": 25,
       "footerNote": "Thank you for your business. Payment is due within 14 days of the invoice date.",
       "termsText": "All services are subject to MoldeWeb's standard terms of service. Questions about this invoice? Contact hello@moldeweb.no."
     }
   ],
-  "invoices": []
+  "invoices": [
+    {
+      "id": "inv-1785400897095",
+      "invoiceNumber": "INV-1001",
+      "orderId": "order-1785400897092",
+      "templateId": "invtpl-default",
+      "clientName": "Ekramul Islam",
+      "clientEmail": "mdai05552@gmail.com",
+      "clientCompany": "Glamify",
+      "itemLabel": "Website Development",
+      "itemType": "service",
+      "quantity": 1,
+      "unitPrice": 2500,
+      "currency": "NOK",
+      "taxLabel": "VAT / MVA (25%)",
+      "taxRate": 25,
+      "taxAmount": 625,
+      "subtotal": 2500,
+      "total": 3125,
+      "issuedAt": "2026-07-30T08:41:37.095Z",
+      "status": "issued",
+      "branding": {
+        "companyName": "MoldeWeb",
+        "companyAddress": "Storgata 1, 6413 Molde, Norway",
+        "companyEmail": "hello@moldeweb.no",
+        "companyPhone": "+47 123 45 678",
+        "taxIdLabel": "Org.nr",
+        "taxIdValue": "",
+        "logoUrl": "",
+        "accentColor": "#14B8A6",
+        "footerNote": "Thank you for your business. Payment is due within 14 days of the invoice date.",
+        "termsText": "All services are subject to MoldeWeb's standard terms of service. Questions about this invoice? Contact hello@moldeweb.no."
+      },
+      "emailStatus": "not_configured",
+      "emailError": "No email provider is configured in Settings → Mail & Notifications"
+    }
+  ]
 }

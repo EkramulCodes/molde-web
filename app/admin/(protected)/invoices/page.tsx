@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiFileText, FiSearch, FiExternalLink, FiTrash2, FiRefreshCw, FiMail } from 'react-icons/fi';
+import { FiFileText, FiSearch, FiDownload, FiTrash2, FiRefreshCw, FiMail, FiSend, FiCheckCircle, FiAlertTriangle, FiAlertCircle } from 'react-icons/fi';
 import { useToast } from '@/context/ToastContext';
 import { InvoiceItem } from '@/lib/types';
 
@@ -10,6 +10,7 @@ export default function InvoicesManager() {
   const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const loadInvoices = async () => {
     try {
@@ -54,6 +55,24 @@ export default function InvoicesManager() {
       }
     } catch {
       showToast('Network error while deleting invoice', 'error');
+    }
+  };
+
+  const handleResend = async (id: string, email: string) => {
+    setResendingId(id);
+    try {
+      const res = await fetch(`/api/invoices/${id}/resend`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        showToast(data.message || `Invoice re-sent to ${email}`, 'success');
+      } else {
+        showToast(data.error || 'Failed to send invoice email', 'error');
+      }
+      await loadInvoices();
+    } catch {
+      showToast('Network error while sending invoice email', 'error');
+    } finally {
+      setResendingId(null);
     }
   };
 
@@ -114,6 +133,7 @@ export default function InvoicesManager() {
                   <th className="py-3 px-4">Item</th>
                   <th className="py-3 px-4">Total</th>
                   <th className="py-3 px-4">Issued</th>
+                  <th className="py-3 px-4">Email</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -132,15 +152,38 @@ export default function InvoicesManager() {
                     </td>
                     <td className="py-3.5 px-4 font-mono font-bold">{formatMoney(inv.total, inv.currency)}</td>
                     <td className="py-3.5 px-4 text-xs text-slate font-mono">{new Date(inv.issuedAt).toLocaleDateString()}</td>
+                    <td className="py-3.5 px-4">
+                      {inv.emailStatus === 'sent' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-[10px] font-bold uppercase tracking-wider" title={inv.emailSentAt ? `Sent ${new Date(inv.emailSentAt).toLocaleString()}` : undefined}>
+                          <FiCheckCircle size={11} /> Sent
+                        </span>
+                      ) : inv.emailStatus === 'failed' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-[10px] font-bold uppercase tracking-wider" title={inv.emailError}>
+                          <FiAlertCircle size={11} /> Failed
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded text-[10px] font-bold uppercase tracking-wider" title="No email provider configured in Settings → Mail & Notifications">
+                          <FiAlertTriangle size={11} /> Not Sent
+                        </span>
+                      )}
+                    </td>
                     <td className="py-3.5 px-4 text-right space-x-2">
+                      <button
+                        onClick={() => handleResend(inv.id, inv.clientEmail)}
+                        disabled={resendingId === inv.id}
+                        className="inline-flex p-1.5 text-slate hover:text-teal rounded hover:bg-slate/10 disabled:opacity-50"
+                        title="Resend Invoice Email"
+                      >
+                        {resendingId === inv.id ? <FiRefreshCw size={16} className="animate-spin" /> : <FiSend size={16} />}
+                      </button>
                       <a
                         href={`/api/invoices/${inv.id}`}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex p-1.5 text-slate hover:text-teal rounded hover:bg-slate/10"
-                        title="View / Print Invoice"
+                        title="Download PDF"
                       >
-                        <FiExternalLink size={16} />
+                        <FiDownload size={16} />
                       </a>
                       <button
                         onClick={() => handleDelete(inv.id, inv.invoiceNumber)}

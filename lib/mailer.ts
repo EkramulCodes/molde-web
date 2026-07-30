@@ -285,17 +285,24 @@ export async function sendClientReceipt(type: NotificationEventType, toEmail: st
  * email (replaces the generic sendClientReceipt('purchase', ...) call for
  * checkout orders — the invoice already contains a full "thank you" framing
  * plus complete line-item detail, so sending both would be redundant).
+ *
+ * Returns the dispatch result (rather than swallowing it like the other
+ * send* helpers) so callers can persist delivery status on the invoice
+ * record and admins have a way to notice + retry failed deliveries.
  */
-export async function sendInvoiceEmail(toEmail: string, invoice: InvoiceItem): Promise<void> {
+export async function sendInvoiceEmail(toEmail: string, invoice: InvoiceItem): Promise<DispatchResult> {
   const settings = getDb().mailSettings;
-  if (!settings || settings.provider === 'none') return;
-  if (!toEmail) return;
+  if (!settings || settings.provider === 'none') {
+    return { ok: false, error: 'No email provider is configured in Settings → Mail & Notifications' };
+  }
+  if (!toEmail) return { ok: false, error: 'Missing recipient email address' };
 
   const html = renderInvoiceHtml(invoice);
   const result = await dispatch(settings, { to: toEmail, subject: `Invoice ${invoice.invoiceNumber} — ${invoice.branding.companyName}`, html });
   if (!result.ok) {
     console.warn('[mailer] Failed to send invoice email:', result.error);
   }
+  return result;
 }
 
 /** Sends a real test email using the currently saved provider config. */
